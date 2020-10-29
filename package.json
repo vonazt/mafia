@@ -4,7 +4,7 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "ts-node-dev --respawn --transpile-only index.ts"
+    "start": "rollup -c && ts-node-dev --respawn --transpile-only index.ts"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
@@ -27,9 +27,15 @@
     "ts-node-dev": "^1.0.0"
   },
   "dependencies": {
+    "@types/socket.io": "^2.1.11",
+    "@types/socket.io-client": "^1.4.34",
+    "axios": "^0.21.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "http": "^0.0.1-security",
     "sirv-cli": "^1.0.0",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.1",
     "typescript": "^4.0.5"
   }
 }
