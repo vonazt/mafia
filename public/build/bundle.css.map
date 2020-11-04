@@ -5,8 +5,8 @@
     "App.svelte"
   ],
   "sourcesContent": [
-    "<script>\n\timport io from 'socket.io-client';\n\tconst socket = io()\n  export let name;\n\n  const handleSubmit = () => {\n\t\tconsole.log('sumbitted')\n    socket.emit(`message`, `whyyyyy`);\n  };\n</script>\n\n<style>\n  main {\n    text-align: center;\n    padding: 1em;\n    max-width: 240px;\n    margin: 0 auto;\n  }\n\n  h1 {\n    color: #ff3e00;\n    text-transform: uppercase;\n    font-size: 4em;\n    font-weight: 100;\n  }\n\n  @media (min-width: 640px) {\n    main {\n      max-width: none;\n    }\n  }\n\n\tbutton {\n\t\theight: 20px;\n\t\twidth: 60px;\n\t}\n</style>\n\n<main>\n  <h1>Hello asahjaash {name}!</h1>\n  <p>\n    Visit the\n    <a href=\"https://svelte.dev/tutorial\">Svelte tutorial</a>\n    to learn how to build Svelte apps.\n  </p>\n  <button on:click={handleSubmit}>Press me</button>\n</main>\n"
+    "<script>\n  import io from 'socket.io-client';\n  const socket = io();\n\n  let name;\n\n  const handleSubmit = () => {\n    socket.emit(`join`, name);\n  };\n\n  socket.on(`message`, () => {\n    console.log('LOUD AND CLEAR')\n  })\n</script>\n\n<style>\n  button {\n    height: 5rem;\n    width: 15rem;\n  }\n\n  .container {\n    display: flex;\n    justify-content: center;\n  }\n</style>\n\n<main>\n  <div class=\"container\">\n    <input bind:value={name} />\n    <button on:click={handleSubmit}>Join</button></div>\n</main>\n"
   ],
   "names": [],
-  "mappings": "AAYE,IAAI,eAAC,CAAC,AACJ,UAAU,CAAE,MAAM,CAClB,OAAO,CAAE,GAAG,CACZ,SAAS,CAAE,KAAK,CAChB,MAAM,CAAE,CAAC,CAAC,IAAI,AAChB,CAAC,AAED,EAAE,eAAC,CAAC,AACF,KAAK,CAAE,OAAO,CACd,cAAc,CAAE,SAAS,CACzB,SAAS,CAAE,GAAG,CACd,WAAW,CAAE,GAAG,AAClB,CAAC,AAED,MAAM,AAAC,YAAY,KAAK,CAAC,AAAC,CAAC,AACzB,IAAI,eAAC,CAAC,AACJ,SAAS,CAAE,IAAI,AACjB,CAAC,AACH,CAAC,AAEF,MAAM,eAAC,CAAC,AACP,MAAM,CAAE,IAAI,CACZ,KAAK,CAAE,IAAI,AACZ,CAAC"
+  "mappings": "AAgBE,MAAM,eAAC,CAAC,AACN,MAAM,CAAE,IAAI,CACZ,KAAK,CAAE,KAAK,AACd,CAAC,AAED,UAAU,eAAC,CAAC,AACV,OAAO,CAAE,IAAI,CACb,eAAe,CAAE,MAAM,AACzB,CAAC"
 }

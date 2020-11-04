@@ -12,18 +12,31 @@ const server = require('http').Server(app);
 
 const io = ioserver(server);
 
+const clients: { [key: string]: any } = {};
+const users: { [key: string]: any } = {};
+
+let count: number = 0;
+
 io.on('connection', (socket: Socket) => {
   console.log('a user connected');
-  socket.on('message', function (message: any) {
-    console.log(message);
+  socket.on('join', (name) => {
+    count++;
+    console.log('user joined', name);
+    users[name] = socket.id;
+    clients[socket.id] = socket;
+    console.log('count', count);
+    if (count > 1) {
+      io.to(users['richard']).emit(`message`, "Hello Alex, how've you been");
+    }
   });
+
 });
 
 app.use(cors());
 
 app.use(express.static('public'));
 app.get('*', (req: Request, res: Response) => {
-   console.log('sigh')
+  console.log('sigh');
   res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
