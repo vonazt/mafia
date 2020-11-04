@@ -5,24 +5,26 @@ const PlayerSchema = new Schema({
   name: String,
   role: String,
   alive: { type: Boolean, default: true },
+  nominated: { type: Boolean, default: false },
+  votes: Number,
 });
 
 const GameSchema = new Schema({
   players: [PlayerSchema],
-  playerCount: { type: Number, default: 0 },
   gameId: String,
 });
 
-type Players = {
+export type Player = {
   socketId: string;
   name: string;
   role?: string;
   alive?: boolean;
+  nominated?: boolean;
+  votes?: number;
 };
 
-interface IGamesDocument extends Document {
-  players: Players[];
-  playerCount: number;
+export interface IGamesDocument extends Document {
+  players: Player[];
   gameId: string;
 }
 

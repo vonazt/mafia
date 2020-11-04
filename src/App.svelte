@@ -9,25 +9,21 @@
 
   let gameError;
 
-  let players;
-  let playerCount;
+  let players = [];
 
   const handleCreate = () => {
     socket.emit(`create`);
   };
 
   socket.on(`createSuccess`, (newGameId) => {
+    console.log('new game id', newGameId);
     gameId = newGameId;
   });
 
-  socket.on(
-    `joinSuccess`,
-    (joinedGameId, playerCountResponse, playersResponse) => {
-      playerCount = playerCountResponse;
-      players = playersResponse;
-      gameId = joinedGameId;
-    },
-  );
+  socket.on(`joinSuccess`, (joinedGameId, playersResponse) => {
+    players = [...playersResponse];
+    gameId = joinedGameId;
+  });
 
   socket.on(`noGame`, () => {
     gameError = `Game not found`;
@@ -46,12 +42,14 @@
     socket.emit(`add`, gameId, name);
   };
 
-  socket.on(`addedPlayer`, (playerCountResponse, playersResponse) => {
-    console.log('player count', playerCount);
+  socket.on(`addedPlayer`, (playersResponse) => {
     console.log('players', players);
-    playerCount = playerCountResponse;
-    players = playersResponse;
+    players = [...playersResponse];
   });
+
+  const handleStart = () => {
+    socket.emit(`start`, gameId);
+  };
 </script>
 
 <style>
@@ -88,8 +86,11 @@
           <li>{player.name}</li>
         {/each}
       </ol>
-      Total number of players:
-      {playerCount}
+      Registered players:
+      {players.length}
+      {#if players.length >= 6}
+        <button on:click={handleStart}>Start</button>
+      {/if}
     {/if}
   </div>
 </main>

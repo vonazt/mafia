@@ -53,7 +53,7 @@ io.on('connection', (socket: Socket) => {
         io.to(gameId).emit(`noGame`);
       }
       socket.join(response.gameId);
-      io.to(gameId).emit(`joinSuccess`, gameId, response.playerCount, response.players);
+      io.to(gameId).emit(`joinSuccess`, gameId, response.players);
     },
   );
 
@@ -62,9 +62,13 @@ io.on('connection', (socket: Socket) => {
     async (gameId: string, name: string): Promise<void> => {
       const response = await gameService.addPlayer(gameId, name, socket.id);
       console.log('response is', response);
-      io.to(gameId).emit(`addedPlayer`, response.playerCount, response.players);
+      io.to(gameId).emit(`addedPlayer`, response.players);
     },
   );
+
+  socket.on(`start`, async (gameId: string) => {
+    const playerRoles = await gameService.startGame(gameId)
+  })
 });
 
 app.use(cors());
