@@ -5,7 +5,7 @@
     "App.svelte"
   ],
   "sourcesContent": [
-    "<script>\n  import io from 'socket.io-client';\n  const socket = io();\n\n  let name;\n\n  const handleSubmit = () => {\n    socket.emit(`join`, name);\n  };\n\n  socket.on(`message`, () => {\n    console.log('LOUD AND CLEAR')\n  })\n</script>\n\n<style>\n  button {\n    height: 5rem;\n    width: 15rem;\n  }\n\n  .container {\n    display: flex;\n    justify-content: center;\n  }\n</style>\n\n<main>\n  <div class=\"container\">\n    <input bind:value={name} />\n    <button on:click={handleSubmit}>Join</button></div>\n</main>\n"
+    "<script>\n  import io from 'socket.io-client';\n  const socket = io();\n\n  let name;\n\n  const handleSubmit = () => {\n    socket.emit(`create`);\n  };\n\n  socket.on(`message`, message => {\n    console.log('LOUD AND CLEAR', message)\n  })\n</script>\n\n<style>\n  button {\n    height: 5rem;\n    width: 15rem;\n  }\n\n  .container {\n    display: flex;\n    justify-content: center;\n  }\n</style>\n\n<main>\n  <div class=\"container\">\n    <button on:click={handleSubmit}>Create</button></div>\n</main>\n"
   ],
   "names": [],
   "mappings": "AAgBE,MAAM,eAAC,CAAC,AACN,MAAM,CAAE,IAAI,CACZ,KAAK,CAAE,KAAK,AACd,CAAC,AAED,UAAU,eAAC,CAAC,AACV,OAAO,CAAE,IAAI,CACb,eAAe,CAAE,MAAM,AACzB,CAAC"

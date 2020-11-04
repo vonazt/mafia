@@ -1,10 +1,28 @@
 import express, { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import ioserver, { Socket } from 'socket.io';
 
+import * as gameService from './services';
+
 dotenv.config();
+
+const connectToMongo = async () => {
+  try {
+    console.log(`connecting to mongo`);
+    await mongoose.connect(
+      `mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_PASSWORD}@violet.zoqgo.mongodb.net/${process.env.MONGO_DB}?retryWrites=true&w=majority`,
+      { useNewUrlParser: true, useUnifiedTopology: true },
+    );
+    console.log(`Connected to MongoDB`);
+  } catch (err) {
+    console.error(`Error connecting to MongoDB`, err);
+  }
+};
+
+(async () => connectToMongo())();
 
 const app = express();
 
@@ -12,31 +30,24 @@ const server = require('http').Server(app);
 
 const io = ioserver(server);
 
-const clients: { [key: string]: any } = {};
-const users: { [key: string]: any } = {};
-
-let count: number = 0;
-
 io.on('connection', (socket: Socket) => {
   console.log('a user connected');
-  socket.on('join', (name) => {
-    count++;
-    console.log('user joined', name);
-    users[name] = socket.id;
-    clients[socket.id] = socket;
-    console.log('count', count);
-    if (count > 1) {
-      io.to(users['richard']).emit(`message`, "Hello Alex, how've you been");
-    }
+  socket.on(`create`, async () => {
+    console.log(`creating game`);
+    const gameId = await gameService.createGame();
+    console.log('created game', gameId)
+    socket.join(gameId);
+    io.to(gameId).emit(`message`, `You joined ${gameId}`);
   });
-
+  socket.on('join', (name: string, gameId: number) => {
+    gameService.joinGame(socket.id, name, gameId);
+  });
 });
 
 app.use(cors());
 
 app.use(express.static('public'));
 app.get('*', (req: Request, res: Response) => {
-  console.log('sigh');
   res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 

@@ -5,11 +5,11 @@
   let name;
 
   const handleSubmit = () => {
-    socket.emit(`join`, name);
+    socket.emit(`create`);
   };
 
-  socket.on(`message`, () => {
-    console.log('LOUD AND CLEAR')
+  socket.on(`message`, message => {
+    console.log('LOUD AND CLEAR', message)
   })
 </script>
 
@@ -27,6 +27,5 @@
 
 <main>
   <div class="container">
-    <input bind:value={name} />
-    <button on:click={handleSubmit}>Join</button></div>
+    <button on:click={handleSubmit}>Create</button></div>
 </main>
