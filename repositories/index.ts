@@ -10,3 +10,15 @@ export const createGame = async (): Promise<string> => {
   await gameToSave.save();
   return gameId;
 };
+
+export const addPlayer = async (
+  gameId: string,
+  name: string,
+  socketId: string,
+) => {
+  return GamesModel.findOneAndUpdate(
+    { gameId },
+    { $addToSet: { players: { name, socketId } }, $inc: { playerCount: 1 } },
+    { new: true, useFindAndModify: false },
+  );
+};

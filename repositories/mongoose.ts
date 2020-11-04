@@ -9,19 +9,19 @@ const PlayerSchema = new Schema({
 
 const GameSchema = new Schema({
   players: [PlayerSchema],
-  playerCount: Number,
+  playerCount: { type: Number, default: 0 },
   gameId: String,
 });
 
 type Players = {
   socketId: string;
   name: string;
-  role: string;
-  alive: boolean;
+  role?: string;
+  alive?: boolean;
 };
 
 interface IGamesDocument extends Document {
-  players: Players;
+  players: Players[];
   playerCount: number;
   gameId: string;
 }

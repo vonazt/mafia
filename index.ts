@@ -32,22 +32,39 @@ const io = ioserver(server);
 
 io.on('connection', (socket: Socket) => {
   console.log('a user connected');
-  socket.on(`create`, async () => {
-    console.log(`creating game`);
-    const gameId = await gameService.createGame();
-    console.log('created game', gameId);
-    socket.join(gameId);
-    io.to(gameId).emit(`createSuccess`, gameId);
-  });
-  socket.on('join', async (gameId: string) => {
-    const response = await gameService.joinGame(gameId);
-    if (!response) {
+
+  socket.on(
+    `create`,
+    async (): Promise<void> => {
+      console.log(`creating game`);
+      const gameId = await gameService.createGame();
+      console.log('created game', gameId);
       socket.join(gameId);
-      io.to(gameId).emit(`noGame`);
-    }
-    socket.join(response.gameId);
-    io.to(gameId).emit(`joinSuccess`, response.gameId);
-  });
+      io.to(gameId).emit(`createSuccess`, gameId);
+    },
+  );
+
+  socket.on(
+    'join',
+    async (gameId: string): Promise<void> => {
+      const response = await gameService.joinGame(gameId);
+      if (!response) {
+        socket.join(gameId);
+        io.to(gameId).emit(`noGame`);
+      }
+      socket.join(response.gameId);
+      io.to(gameId).emit(`joinSuccess`, gameId, response.playerCount, response.players);
+    },
+  );
+
+  socket.on(
+    'add',
+    async (gameId: string, name: string): Promise<void> => {
+      const response = await gameService.addPlayer(gameId, name, socket.id);
+      console.log('response is', response);
+      io.to(gameId).emit(`addedPlayer`, response.playerCount, response.players);
+    },
+  );
 });
 
 app.use(cors());

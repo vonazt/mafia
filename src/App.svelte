@@ -9,6 +9,9 @@
 
   let gameError;
 
+  let players;
+  let playerCount;
+
   const handleCreate = () => {
     socket.emit(`create`);
   };
@@ -17,9 +20,14 @@
     gameId = newGameId;
   });
 
-  socket.on(`joinSuccess`, (joinedGameId) => {
-    gameId = joinedGameId;
-  });
+  socket.on(
+    `joinSuccess`,
+    (joinedGameId, playerCountResponse, playersResponse) => {
+      playerCount = playerCountResponse;
+      players = playersResponse;
+      gameId = joinedGameId;
+    },
+  );
 
   socket.on(`noGame`, () => {
     gameError = `Game not found`;
@@ -29,6 +37,21 @@
     console.log('joining', joinId);
     socket.emit(`join`, joinId);
   };
+
+  console.log('game is id', gameId);
+
+  const addPlayer = (e) => {
+    e.preventDefault();
+    console.log('adding player', name);
+    socket.emit(`add`, gameId, name);
+  };
+
+  socket.on(`addedPlayer`, (playerCountResponse, playersResponse) => {
+    console.log('player count', playerCount);
+    console.log('players', players);
+    playerCount = playerCountResponse;
+    players = playersResponse;
+  });
 </script>
 
 <style>
@@ -55,7 +78,18 @@
         <button on:click={handleJoin}>Join</button>
       </div>
     {:else}
-      <p>LET'S PLAY IN {gameId}</p>
+      <p>YOU'RE IN ROOM {gameId}</p>
+      <form>
+        <label>Name <input bind:value={name} /></label><button
+          on:click={addPlayer}>Add player</button>
+      </form>
+      <ol>
+        {#each players as player}
+          <li>{player.name}</li>
+        {/each}
+      </ol>
+      Total number of players:
+      {playerCount}
     {/if}
   </div>
 </main>
