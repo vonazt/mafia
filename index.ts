@@ -35,12 +35,18 @@ io.on('connection', (socket: Socket) => {
   socket.on(`create`, async () => {
     console.log(`creating game`);
     const gameId = await gameService.createGame();
-    console.log('created game', gameId)
+    console.log('created game', gameId);
     socket.join(gameId);
-    io.to(gameId).emit(`message`, `You joined ${gameId}`);
+    io.to(gameId).emit(`createSuccess`, gameId);
   });
-  socket.on('join', (name: string, gameId: number) => {
-    gameService.joinGame(socket.id, name, gameId);
+  socket.on('join', async (gameId: string) => {
+    const response = await gameService.joinGame(gameId);
+    if (!response) {
+      socket.join(gameId);
+      io.to(gameId).emit(`noGame`);
+    }
+    socket.join(response.gameId);
+    io.to(gameId).emit(`joinSuccess`, response.gameId);
   });
 });
 
