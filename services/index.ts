@@ -7,12 +7,14 @@ export const createGame = gameRepository.createGame;
 
 export const addPlayer = gameRepository.addPlayer;
 
-export const startGame = async (gameId: string) => {
-  const players = await gameRepository.listPlayers(gameId);
-  console.log('players are', players);
+export const startGame = async (gameId: string): Promise<Player[]> => {
+  const players: Player[] = await gameRepository.listPlayers(gameId);
+  const roles: string[] = createRoles(players);
+  return players.map((player: Player, index: number) => ({
+    ...player,
+    role: roles[index],
+  }));
 };
-
-// const roles: string[] = [`civilian`, `mafia`, `inspector`, `guardian angel`]
 
 const shuffleRoles = (roles: string[]): string[] => {
   for (let i = roles.length - 1; i > 0; i--) {

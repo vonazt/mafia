@@ -61,14 +61,17 @@ io.on('connection', (socket: Socket) => {
     'add',
     async (gameId: string, name: string): Promise<void> => {
       const response = await gameService.addPlayer(gameId, name, socket.id);
-      console.log('response is', response);
       io.to(gameId).emit(`addedPlayer`, response.players);
     },
   );
 
   socket.on(`start`, async (gameId: string) => {
-    const playerRoles = await gameService.startGame(gameId)
-  })
+    const playersWithAssignedRoles = await gameService.startGame(gameId);
+    console.log()
+    playersWithAssignedRoles.map((player) =>
+      io.to(player.socketId).emit(`role`, player.role),
+    );
+  });
 });
 
 app.use(cors());

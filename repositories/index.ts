@@ -24,6 +24,6 @@ export const addPlayer = async (
 };
 
 export const listPlayers = async (gameId: string): Promise<Player[]> => {
-  const { players } = await GamesModel.findOne({ gameId });
+  const { players } = await GamesModel.findOne({ gameId }, null, {lean: true});
   return players;
 };

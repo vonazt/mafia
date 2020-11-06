@@ -47,6 +47,10 @@
     players = [...playersResponse];
   });
 
+  socket.on(`role`, role => {
+    console.log('your role is', role)
+  })
+
   const handleStart = () => {
     socket.emit(`start`, gameId);
   };
