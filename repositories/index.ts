@@ -16,11 +16,27 @@ export const addPlayer = async (
   name: string,
   socketId: string,
 ): Promise<IGamesDocument> => {
-  return GamesModel.findOneAndUpdate(
-    { gameId },
-    { $addToSet: { players: { name, socketId } } },
-    { new: true, useFindAndModify: false },
-  );
+  console.log('game id', gameId)
+  const playerAlreadyInGame = await GamesModel.findOne({
+    gameId,
+    players: { $elemMatch: { name } },
+  });
+  if (!playerAlreadyInGame)
+    return GamesModel.findOneAndUpdate(
+      { gameId },
+      { $addToSet: { players: { name, socketId } } },
+      { new: true, useFindAndModify: false },
+    );
+  else {
+    return GamesModel.findOneAndUpdate(
+      {
+        gameId,
+        players: { $elemMatch: { name } },
+      },
+      { $set: { 'players.$.connected': true, 'players.$.socketId': socketId } },
+      { new: true, useFindAndModify: false },
+    );
+  }
 };
 
 export const listPlayers = async (gameId: string): Promise<Player[]> => {
@@ -43,7 +59,7 @@ export const disconnectPlayerFromGame = async (
   const result = await GamesModel.updateOne(
     { players: { $elemMatch: { socketId } } },
     { $set: { 'players.$.connected': false, 'players.$.socketId': null } },
-    { new: true, lean: true },
+    { new: true, lean: true, useFindAndModify: false },
   );
   console.log('result is', result);
 };
@@ -52,5 +68,5 @@ export const removePlayerFromGame = async (socketId: string): Promise<void> =>
   GamesModel.updateOne(
     { players: { $elemMatch: { socketId } } },
     { $pull: { players: { socketId } } },
-    { new: true, lean: true },
+    { new: true, lean: true, useFindAndModify: false },
   );

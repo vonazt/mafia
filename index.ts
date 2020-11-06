@@ -67,7 +67,6 @@ io.on('connection', (socket: Socket) => {
 
   socket.on(`start`, async (gameId: string) => {
     const playersWithAssignedRoles = await gameService.startGame(gameId);
-    console.log('satrtoing');
     await Promise.all(
       playersWithAssignedRoles.map((player) =>
         io.to(player.socketId).emit(`role`, player.role),
@@ -77,7 +76,6 @@ io.on('connection', (socket: Socket) => {
   });
 
   socket.on(`disconnect`, async () => {
-    console.log('removing ', socket.id)
     await gameService.disconnectPlayerFromGame(socket.id)
   })
 
