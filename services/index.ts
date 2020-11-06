@@ -3,32 +3,50 @@ import * as gameRepository from '../repositories';
 
 export const joinGame = gameRepository.joinGame;
 
-export const createGame = gameRepository.createGame
+export const createGame = gameRepository.createGame;
 
-export const addPlayer = gameRepository.addPlayer
+export const addPlayer = gameRepository.addPlayer;
 
 export const startGame = async (gameId: string) => {
-  const players = await gameRepository.listPlayers(gameId)
-  console.log('players are', players)
-}
+  const players = await gameRepository.listPlayers(gameId);
+  console.log('players are', players);
+};
 
-// const roles: string[] = [`civilian`, `mafia`, `inspector`, `guardian angel`] 
+// const roles: string[] = [`civilian`, `mafia`, `inspector`, `guardian angel`]
 
 const shuffleRoles = (roles: string[]): string[] => {
   for (let i = roles.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [roles[i], roles[j]] = [roles[j], roles[i]];
+    const j = Math.floor(Math.random() * (i + 1));
+    [roles[i], roles[j]] = [roles[j], roles[i]];
   }
-  return roles
-}
+  return roles;
+};
 
-export const createRoles = (players: Player[]) => {
-  const numberOfPlayers = players.length
-  const numberOfMafia = Math.floor(numberOfPlayers / 5)
-  const numberOfCivilians = numberOfPlayers - numberOfMafia
-  const mafiaRoles = Array.from(Array(numberOfMafia)).map(() => `mafia`)
-  const civilianRoles = Array.from(Array(numberOfCivilians)).map(() => `civilian`)
-  const combinedRoles = [...mafiaRoles, ...civilianRoles]
-  return shuffleRoles(combinedRoles)
-  
-}
+export const createRoles = (players: Player[]): string[] => {
+  const numberOfPlayers = players.length;
+  const numberOfMafia = Math.floor(numberOfPlayers / 5);
+  const numberOfDetectives = Math.ceil(numberOfMafia / 3);
+  const numberOfGuardianAngels = Math.floor(numberOfPlayers / 10);
+  const numberOfCivilians =
+    numberOfPlayers -
+    numberOfMafia -
+    numberOfDetectives -
+    numberOfGuardianAngels;
+  const mafiaRoles = Array.from(Array(numberOfMafia)).map(() => `mafia`);
+  const detectiveRoles = Array.from(Array(numberOfDetectives)).map(
+    () => `detective`,
+  );
+  const guardianAngelRoles = Array.from(Array(numberOfGuardianAngels)).map(
+    () => `guardianAngel`,
+  );
+  const civilianRoles = Array.from(Array(numberOfCivilians)).map(
+    () => `civilian`,
+  );
+  const combinedRoles = [
+    ...mafiaRoles,
+    ...civilianRoles,
+    ...detectiveRoles,
+    ...guardianAngelRoles,
+  ];
+  return shuffleRoles(combinedRoles);
+};
