@@ -15,6 +15,7 @@ const getPlayers = (numberOfPlayers: number): Player[] =>
   Array.from(Array(numberOfPlayers)).map(() => ({
     name: generateRandomString(),
     socketId: generateRandomString(),
+    connected: true
   }));
 
 const getAllRoles = (roles: string[]): Roles =>

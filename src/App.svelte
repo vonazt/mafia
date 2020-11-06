@@ -54,6 +54,7 @@
   const handleStart = () => {
     socket.emit(`start`, gameId);
   };
+
 </script>
 
 <style>

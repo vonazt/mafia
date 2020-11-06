@@ -7,6 +7,7 @@ const PlayerSchema = new Schema({
   alive: { type: Boolean, default: true },
   nominated: { type: Boolean, default: false },
   votes: Number,
+  connected: { type: Boolean, default: true },
 });
 
 const GameSchema = new Schema({
@@ -21,6 +22,7 @@ export type Player = {
   alive?: boolean;
   nominated?: boolean;
   votes?: number;
+  connected?: boolean;
 };
 
 export interface IGamesDocument extends Document {

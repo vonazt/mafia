@@ -10,10 +10,12 @@ export const addPlayer = gameRepository.addPlayer;
 export const startGame = async (gameId: string): Promise<Player[]> => {
   const players: Player[] = await gameRepository.listPlayers(gameId);
   const roles: string[] = createRoles(players);
-  return players.map((player: Player, index: number) => ({
+  const playersWithAssignedRoles = players.map((player: Player, index: number) => ({
     ...player,
     role: roles[index],
   }));
+  await gameRepository.updatePlayers(gameId, players)
+  return playersWithAssignedRoles
 };
 
 const shuffleRoles = (roles: string[]): string[] => {
@@ -52,3 +54,7 @@ export const createRoles = (players: Player[]): string[] => {
   ];
   return shuffleRoles(combinedRoles);
 };
+
+export const disconnectPlayerFromGame = gameRepository.disconnectPlayerFromGame
+
+export const removePlayerFromGame = gameRepository.removePlayerFromGame

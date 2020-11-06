@@ -24,6 +24,33 @@ export const addPlayer = async (
 };
 
 export const listPlayers = async (gameId: string): Promise<Player[]> => {
-  const { players } = await GamesModel.findOne({ gameId }, null, {lean: true});
+  const { players } = await GamesModel.findOne({ gameId }, null, {
+    lean: true,
+  });
   return players;
 };
+
+export const updatePlayers = async (
+  gameId: string,
+  players: Player[],
+): Promise<IGamesDocument> => {
+  return GamesModel.updateOne({ gameId }, players);
+};
+
+export const disconnectPlayerFromGame = async (
+  socketId: string,
+): Promise<void> => {
+  const result = await GamesModel.updateOne(
+    { players: { $elemMatch: { socketId } } },
+    { $set: { 'players.$.connected': false, 'players.$.socketId': null } },
+    { new: true, lean: true },
+  );
+  console.log('result is', result);
+};
+
+export const removePlayerFromGame = async (socketId: string): Promise<void> =>
+  GamesModel.updateOne(
+    { players: { $elemMatch: { socketId } } },
+    { $pull: { players: { socketId } } },
+    { new: true, lean: true },
+  );

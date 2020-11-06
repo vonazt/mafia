@@ -31,7 +31,7 @@ const server = require('http').Server(app);
 const io = ioserver(server);
 
 io.on('connection', (socket: Socket) => {
-  console.log('a user connected');
+  console.log('a user connected', socket.id);
 
   socket.on(
     `create`,
@@ -67,11 +67,24 @@ io.on('connection', (socket: Socket) => {
 
   socket.on(`start`, async (gameId: string) => {
     const playersWithAssignedRoles = await gameService.startGame(gameId);
-    console.log()
-    playersWithAssignedRoles.map((player) =>
-      io.to(player.socketId).emit(`role`, player.role),
+    console.log('satrtoing');
+    await Promise.all(
+      playersWithAssignedRoles.map((player) =>
+        io.to(player.socketId).emit(`role`, player.role),
+      ),
     );
+    io.to(gameId).emit(`readyToStart`);
   });
+
+  socket.on(`disconnect`, async () => {
+    console.log('removing ', socket.id)
+    await gameService.disconnectPlayerFromGame(socket.id)
+  })
+
+  socket.on(
+    `quit`,
+    async (): Promise<void> => gameService.removePlayerFromGame(socket.id),
+  );
 });
 
 app.use(cors());
