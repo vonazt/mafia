@@ -61,6 +61,7 @@ io.on('connection', (socket: Socket) => {
     'add',
     async (gameId: string, name: string): Promise<void> => {
       const response = await gameService.addPlayer(gameId, name, socket.id);
+      console.log('response is', response)
       io.to(gameId).emit(`addedPlayer`, response.players);
     },
   );
@@ -68,16 +69,24 @@ io.on('connection', (socket: Socket) => {
   socket.on(`start`, async (gameId: string) => {
     const playersWithAssignedRoles = await gameService.startGame(gameId);
     await Promise.all(
-      playersWithAssignedRoles.map((player) =>
-        io.to(player.socketId).emit(`role`, player.role),
-      ),
+      playersWithAssignedRoles.map((player) => {
+        if (player.role === `mafia`) {
+          const otherMafia = playersWithAssignedRoles.filter(
+            (otherPlayer) =>
+              otherPlayer.socketId !== player.socketId &&
+              otherPlayer.role === `mafia`,
+          );
+          io.to(player.socketId).emit(`role`, player, otherMafia)
+        }
+        io.to(player.socketId).emit(`role`, player);
+      }),
     );
     io.to(gameId).emit(`readyToStart`);
   });
 
   socket.on(`disconnect`, async () => {
-    await gameService.disconnectPlayerFromGame(socket.id)
-  })
+    await gameService.disconnectPlayerFromGame(socket.id);
+  });
 
   socket.on(
     `quit`,

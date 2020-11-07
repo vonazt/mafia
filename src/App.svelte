@@ -43,9 +43,10 @@
   };
 
   socket.on(`addedPlayer`, (playersResponse) => {
-    console.log('players', players);
     players = [...playersResponse];
   });
+
+  $: console.log('players', players);
 
   socket.on(`role`, role => {
     console.log('your role is', role)
