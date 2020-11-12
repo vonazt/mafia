@@ -4,7 +4,8 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "rollup -c && ts-node-dev --respawn --transpile-only index.ts"
+    "start": "rollup -c && ts-node-dev --respawn --transpile-only index.ts",
+    "seed": "node db/seeds.ts"
   },
   "devDependencies": {
     "@babel/core": "^7.12.3",

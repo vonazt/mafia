@@ -1,4 +1,9 @@
-import { GamesModel, IGamesDocument, Player } from './mongoose';
+import {
+  GamesModel,
+  IGamesDocument,
+  IUpdateGamesDocument,
+  Player,
+} from './mongoose';
 
 export const joinGame = async (gameId: string) => {
   return GamesModel.findOne({ gameId });
@@ -48,31 +53,84 @@ export const listPlayers = async (gameId: string): Promise<Player[]> => {
 export const updatePlayers = async (
   gameId: string,
   players: Player[],
-): Promise<IGamesDocument> => {
-  return GamesModel.findOneAndUpdate({ gameId }, players);
+): Promise<IUpdateGamesDocument> => {
+  const result = await GamesModel.findOneAndUpdate(
+    { gameId },
+    { players },
+    {
+      useFindAndModify: false,
+      new: true,
+      lean: true,
+    },
+  );
+  return result;
 };
 
 export const assassinatePlayer = async (
   player: Player,
+  assassin: string,
   gameId: string,
-): Promise<Pick<IGamesDocument, '_id' | 'players' | 'gameId'>> => {
-  console.log('player to kill', player)
-  console.log('game id', gameId)
+): Promise<IUpdateGamesDocument> => {
+  // console.log('player to kill', player);
+  // console.log('game id', gameId);
+  console.log('assasin is', assassin)
+  await GamesModel.findOneAndUpdate(
+    {
+      gameId,
+      players: { $elemMatch: { nominatedBy: { $in: assassin } } },
+    },
+    { $pull: { 'players.$.nominatedBy': assassin } },
+    { new: true, lean: true, useFindAndModify: false },
+  );
+
   const updatedGame = await GamesModel.findOneAndUpdate(
     {
       gameId,
-      players: { $elemMatch: { name: player.name, socketId: player.socketId } },
+      players: { $elemMatch: { name: player.name } },
     },
-    { $set: { 'players.$.nominated': true } },
+    { $addToSet: { 'players.$.nominatedBy': assassin } },
     { new: true, lean: true, useFindAndModify: false },
   );
-  console.log('updated gamne is', updatedGame)
-  return updatedGame
+
+  console.log('UPDATED GAME IN ASSASSINATE IS', updatedGame.players[0].nominatedBy);
+  const { nominated, mafia } = updatedGame.players.reduce(
+    (acc, currPlayer) => {
+      if (currPlayer.nominatedBy.length && currPlayer.role === `mafia`) {
+        return {
+          nominated: [...acc.nominated, currPlayer],
+          mafia: [...acc.mafia, currPlayer],
+        };
+      }
+      if (currPlayer.nominatedBy.length) {
+        return { ...acc, nominated: [...acc.nominated, currPlayer] };
+      }
+      if (currPlayer.role === `mafia`)
+        return { ...acc, mafia: [...acc.mafia, currPlayer] };
+      return acc;
+    },
+    {
+      nominated: [],
+      mafia: [],
+    },
+  );
+  if (nominated.length === 1 && nominated[0].votes === mafia.length) {
+    const gameWithDeadPlayer = await GamesModel.findOneAndUpdate(
+      { gameId, players: { $elemMatch: { name: nominated[0].name } } },
+      {
+        $set: { 'players.$.isAlive': false },
+        stageComplete: true,
+        lastPlayerKilled: nominated[0],
+      },
+      { useFindAndModify: false, new: true, lean: true },
+    );
+    return gameWithDeadPlayer;
+  }
+  return updatedGame;
 };
 
 export const disconnectPlayerFromGame = async (
   socketId: string,
-): Promise<Pick<IGamesDocument, '_id' | 'players' | 'gameId'>> =>
+): Promise<IUpdateGamesDocument> =>
   GamesModel.findOneAndUpdate(
     { players: { $elemMatch: { socketId } } },
     { $set: { 'players.$.connected': false, 'players.$.socketId': null } },
@@ -81,7 +139,7 @@ export const disconnectPlayerFromGame = async (
 
 export const removePlayerFromGame = async (
   socketId: string,
-): Promise<Pick<IGamesDocument, '_id' | 'players' | 'gameId'>> =>
+): Promise<IUpdateGamesDocument> =>
   GamesModel.findOneAndUpdate(
     { players: { $elemMatch: { socketId } } },
     { $pull: { players: { socketId } } },

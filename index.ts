@@ -10,7 +10,7 @@ import { Player } from './repositories/mongoose';
 
 dotenv.config();
 
-const connectToMongo = async () => {
+export const connectToMongo = async () => {
   try {
     console.log(`connecting to mongo`);
     await mongoose.connect(
@@ -86,8 +86,15 @@ io.on('connection', (socket: Socket) => {
     io.to(gameId).emit(`readyToStart`);
   });
 
-  socket.on(`assassinate`, async (player: Player, gameId: string) => {
-    const response = await gameService.assassinatePlayer(player, gameId);
+  socket.on(`assassinate`, async (player: Player, assassin: string, gameId: string) => {
+    const updatedGame = await gameService.assassinatePlayer(player, assassin, gameId);
+    console.log('updated game is', updatedGame);
+    const mafia = updatedGame.players.filter(({ role }) => role === `mafia`);
+    await Promise.all(
+      mafia.map(({ socketId }) =>
+        io.to(socketId).emit(`postAssassination`, updatedGame),
+      ),
+    );
   });
 
   socket.on(`disconnect`, async () => {

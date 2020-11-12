@@ -19,6 +19,7 @@
   "include": [
     "graphql/*",
     "index.ts",
-    "models/*"
+    "models/*",
+    "db/*"
   ]
 }

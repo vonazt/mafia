@@ -10,6 +10,7 @@
   let gameError;
 
   let players = [];
+  let playerToNominate;
   let mafia = [];
 
   $: joinedMafia = mafia.join(`, `);
@@ -72,22 +73,34 @@
 
   let day = false;
   let mafiaAwake = false;
+  let playerToDie;
 
   socket.on(`readyToStart`, () => {
     mafiaAwake = true;
   });
 
   const handleAssassinatePlayer = (playerToAssassinate) => {
-    players = [
-      ...players.map((player) =>
-        player.name === playerToAssassinate.name
-          ? { ...player, nominated: true }
-          : player,
-      ),
-    ];
-    console.log('game id is', gameId);
-    console.log('player to assassinte is', playerToAssassinate);
-    socket.emit(`assassinate`, playerToAssassinate, gameId);
+    console.log('player to assassinate', playerToAssassinate);
+    // players = [
+    //   ...players.map((player) =>
+    //     player.name === playerToAssassinate.name
+    //       ? { ...player, nominated: true }
+    //       : player,
+    //   ),
+    // ];
+    socket.emit(`assassinate`, playerToAssassinate, name, gameId);
+  };
+
+  socket.on(`postAssassination`, (updatedGame) => {
+    console.log('updated game is', updatedGame);
+    players = [...updatedGame.players];
+    if (updatedGame.stageComplete) {
+      playerToDie = updatedGame.lastPlayerKilled;
+    }
+  });
+
+  const handleConfirmKill = () => {
+    console.log(`confirmed that ${playerToDie} will be killed`);
   };
 </script>
 
@@ -130,14 +143,16 @@
         </form>
         <ol>
           {#each players as player}
-            <li
-              class:mafia={role === `mafia`}
-              on:click={() => {
-                if (role === `mafia`) handleAssassinatePlayer(player);
-              }}>
-              {player.name}
-              {#if player.nominated}<span> x </span>{/if}
-            </li>
+            {#if role === `mafia`}
+              <input
+                type="radio"
+                value={player}
+                bind:group={playerToNominate}
+                on:click={() => {
+                  handleAssassinatePlayer(player);
+                }} />
+            {/if}
+            <li class:mafia={role === `mafia`}>{player.name}</li>
           {/each}
         </ol>
         Registered players:
@@ -159,6 +174,10 @@
           Night settles on the city. The citizens go to sleep. The mafia awake.
           They chose someone to kill.
         </p>
+      {/if}
+      {#if playerToDie && mafiaAwake}
+        <p>{playerToDie.name} will be sent to sleep with the fishes</p>
+        <button on:click={handleConfirmKill}>Confirm</button>
       {/if}
     {/if}
   </div>

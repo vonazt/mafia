@@ -5,14 +5,15 @@ const PlayerSchema = new Schema({
   name: String,
   role: String,
   isAlive: { type: Boolean, default: true },
-  nominated: { type: Boolean, default: false },
-  votes: { type: Number, default: 0 },
   connected: { type: Boolean, default: true },
+  nominatedBy: [String],
 });
 
 const GameSchema = new Schema({
   players: [PlayerSchema],
   gameId: String,
+  stageComplete: { type: Boolean, default: false },
+  lastPlayerKilled: PlayerSchema,
 });
 
 export type Player = {
@@ -20,14 +21,20 @@ export type Player = {
   name: string;
   role?: string;
   isAlive?: boolean;
-  nominated?: boolean;
-  votes?: number;
+  nominatedBy?: Player[];
   connected?: boolean;
 };
 
 export interface IGamesDocument extends Document {
   players: Player[];
   gameId: string;
+  stageComplete: boolean;
+  lastPlayerKilled: Player;
 }
 
-export const GamesModel = model<IGamesDocument>(`games`, GameSchema);
+export type IUpdateGamesDocument = Pick<
+  IGamesDocument,
+  'players' | 'gameId' | 'stageComplete' | 'lastPlayerKilled'
+>;
+
+export const GamesModel = model<IGamesDocument>(`Game`, GameSchema);
