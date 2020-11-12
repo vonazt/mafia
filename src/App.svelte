@@ -48,6 +48,7 @@
   };
 
   socket.on(`addedPlayer`, (playersResponse) => {
+    console.log('players response', playersResponse);
     players = [...playersResponse];
   });
 
@@ -68,6 +69,26 @@
   const handleStart = () => {
     socket.emit(`start`, gameId);
   };
+
+  let day = false;
+  let mafiaAwake = false;
+
+  socket.on(`readyToStart`, () => {
+    mafiaAwake = true;
+  });
+
+  const handleAssassinatePlayer = (playerToAssassinate) => {
+    players = [
+      ...players.map((player) =>
+        player.name === playerToAssassinate.name
+          ? { ...player, nominated: true }
+          : player,
+      ),
+    ];
+    console.log('game id is', gameId);
+    console.log('player to assassinte is', playerToAssassinate);
+    socket.emit(`assassinate`, playerToAssassinate, gameId);
+  };
 </script>
 
 <style>
@@ -79,6 +100,11 @@
   .container {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .mafia {
+    cursor: pointer;
   }
 </style>
 
@@ -94,26 +120,45 @@
         <button on:click={handleJoin}>Join</button>
       </div>
     {:else}
-      <p>YOU'RE IN ROOM {gameId}</p>
-      <form>
-        <label>Name <input bind:value={name} /></label><button
-          on:click={addPlayer}>Add player</button>
-      </form>
-      <ol>
-        {#each players as player}
-          <li>{player.name}</li>
-        {/each}
-      </ol>
-      Registered players:
-      {players.length}
-      {#if players.length >= 6}
-        <button on:click={handleStart}>Start</button>
-      {/if}
-      {#if role}
-        <p>You are a {role}</p>
-        {#if mafia.length}
-          <p>The other mafia are {joinedMafia}</p>
+      <div width="100%">
+        <p>YOU'RE IN ROOM {gameId}</p>
+      </div>
+      <div width="100%">
+        <form>
+          <label>Name <input bind:value={name} /></label><button
+            on:click={addPlayer}>Add player</button>
+        </form>
+        <ol>
+          {#each players as player}
+            <li
+              class:mafia={role === `mafia`}
+              on:click={() => {
+                if (role === `mafia`) handleAssassinatePlayer(player);
+              }}>
+              {player.name}
+              {#if player.nominated}<span> x </span>{/if}
+            </li>
+          {/each}
+        </ol>
+        Registered players:
+        {players.length}
+        {#if players.length >= 6}
+          <button on:click={handleStart}>Start</button>
         {/if}
+      </div>
+      {#if role}
+        <div width="100%">
+          <p>You are a {role}</p>
+          {#if mafia.length}
+            <p>The other mafia are {joinedMafia}</p>
+          {/if}
+        </div>
+      {/if}
+      {#if mafiaAwake}
+        <p>
+          Night settles on the city. The citizens go to sleep. The mafia awake.
+          They chose someone to kill.
+        </p>
       {/if}
     {/if}
   </div>

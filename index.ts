@@ -6,6 +6,7 @@ import path from 'path';
 import ioserver, { Socket } from 'socket.io';
 
 import * as gameService from './services';
+import { Player } from './repositories/mongoose';
 
 dotenv.config();
 
@@ -66,9 +67,7 @@ io.on('connection', (socket: Socket) => {
   );
 
   socket.on(`start`, async (gameId: string) => {
-    console.log('startting');
     const playersWithAssignedRoles = await gameService.startGame(gameId);
-    console.log('players with assigned roles', playersWithAssignedRoles);
     await Promise.all(
       playersWithAssignedRoles.map((player) => {
         if (player.role === `mafia`) {
@@ -87,13 +86,20 @@ io.on('connection', (socket: Socket) => {
     io.to(gameId).emit(`readyToStart`);
   });
 
+  socket.on(`assassinate`, async (player: Player, gameId: string) => {
+    const response = await gameService.assassinatePlayer(player, gameId);
+  });
+
   socket.on(`disconnect`, async () => {
     await gameService.disconnectPlayerFromGame(socket.id);
   });
 
   socket.on(
     `quit`,
-    async (): Promise<void> => gameService.removePlayerFromGame(socket.id),
+    async (): Promise<void> => {
+      await gameService.removePlayerFromGame(socket.id);
+      return;
+    },
   );
 });
 

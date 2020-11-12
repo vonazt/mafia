@@ -55,6 +55,8 @@ export const createRoles = (players: Player[]): string[] => {
   return shuffleRoles(combinedRoles);
 };
 
+export const assassinatePlayer = gameRepository.assassinatePlayer
+
 export const disconnectPlayerFromGame = gameRepository.disconnectPlayerFromGame
 
 export const removePlayerFromGame = gameRepository.removePlayerFromGame

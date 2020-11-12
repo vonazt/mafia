@@ -6,7 +6,7 @@ const PlayerSchema = new Schema({
   role: String,
   isAlive: { type: Boolean, default: true },
   nominated: { type: Boolean, default: false },
-  votes: Number,
+  votes: { type: Number, default: 0 },
   connected: { type: Boolean, default: true },
 });
 
