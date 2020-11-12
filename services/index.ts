@@ -14,7 +14,7 @@ export const startGame = async (gameId: string): Promise<Player[]> => {
     ...player,
     role: roles[index],
   }));
-  await gameRepository.updatePlayers(gameId, players)
+  await gameRepository.updatePlayers(gameId, playersWithAssignedRoles)
   return playersWithAssignedRoles
 };
 

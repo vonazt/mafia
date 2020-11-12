@@ -10,6 +10,11 @@
   let gameError;
 
   let players = [];
+  let mafia = [];
+
+  $: joinedMafia = mafia.join(`, `);
+
+  let role = ``;
 
   const handleCreate = () => {
     socket.emit(`create`);
@@ -46,16 +51,23 @@
     players = [...playersResponse];
   });
 
-  $: console.log('players', players);
+  $: console.log(
+    'connected players',
+    players.filter(({ connected }) => connected),
+  );
 
-  socket.on(`role`, role => {
-    console.log('your role is', role)
-  })
+  socket.on(`role`, (assignedRole, otherMafia) => {
+    console.log('yo');
+    console.log('your role is', assignedRole);
+    role = assignedRole;
+    if (otherMafia) mafia = [...otherMafia];
+  });
+
+  $: console.log('role is', role);
 
   const handleStart = () => {
     socket.emit(`start`, gameId);
   };
-
 </script>
 
 <style>
@@ -96,6 +108,12 @@
       {players.length}
       {#if players.length >= 6}
         <button on:click={handleStart}>Start</button>
+      {/if}
+      {#if role}
+        <p>You are a {role}</p>
+        {#if mafia.length}
+          <p>The other mafia are {joinedMafia}</p>
+        {/if}
       {/if}
     {/if}
   </div>

@@ -49,7 +49,7 @@ export const updatePlayers = async (
   gameId: string,
   players: Player[],
 ): Promise<IGamesDocument> => {
-  return GamesModel.updateOne({ gameId }, players);
+  return GamesModel.findOneAndUpdate({ gameId }, players);
 };
 
 export const disconnectPlayerFromGame = async (

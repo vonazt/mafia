@@ -4,7 +4,7 @@ const PlayerSchema = new Schema({
   socketId: String,
   name: String,
   role: String,
-  alive: { type: Boolean, default: true },
+  isAlive: { type: Boolean, default: true },
   nominated: { type: Boolean, default: false },
   votes: Number,
   connected: { type: Boolean, default: true },
@@ -19,7 +19,7 @@ export type Player = {
   socketId: string;
   name: string;
   role?: string;
-  alive?: boolean;
+  isAlive?: boolean;
   nominated?: boolean;
   votes?: number;
   connected?: boolean;
