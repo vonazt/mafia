@@ -97,7 +97,14 @@
   });
 
   const handleConfirmKill = () => {
-    console.log(`confirmed that ${playerToDie} will be killed`);
+    console.log(`confirmed that ${playerToDie.name} will be killed`);
+  };
+
+  const getNominatedBy = (nominatedBy) => {
+    const nominators = nominatedBy
+      .filter(({ _id }) => _id !== thisPlayer._id)
+      .map(({ name }) => name);
+    return nominators.length ? `Nominated by ${nominators.join(`, `)}` : ``;
   };
 </script>
 
@@ -149,7 +156,12 @@
                   handleAssassinatePlayer(player);
                 }} />
             {/if}
-            <li class:mafia={thisPlayer.role === `mafia`}>{player.name}</li>
+            <li class:mafia={thisPlayer.role === `mafia`}>
+              {player.name}
+              {#if thisPlayer.role === `mafia` && player.nominatedBy.length}
+                <span>{getNominatedBy(player.nominatedBy)}</span>
+              {/if}
+            </li>
           {/each}
         </ol>
         Registered players:

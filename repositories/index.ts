@@ -79,6 +79,7 @@ export const assassinatePlayer = async (
   mafiaHitman: Player,
   gameId: string,
 ): Promise<IUpdateGamesDocument> => {
+  //remove mafiaHitman._id from previously nominated player's nominatedBy array
   await GamesModel.findOneAndUpdate(
     {
       gameId,
@@ -87,6 +88,7 @@ export const assassinatePlayer = async (
     { $pull: { 'players.$.nominatedBy': mafiaHitman._id } },
     { new: true, lean: true, useFindAndModify: false },
   );
+  //add mafiaHitman._id to nominated player's nominatedBy array
   const updatedGame = await GamesModel.findOneAndUpdate(
     {
       gameId,
@@ -128,7 +130,7 @@ export const assassinatePlayer = async (
   ) {
     console.log('PLAYER IS ABOUT TO DIE');
     const gameWithDeadPlayer = await GamesModel.findOneAndUpdate(
-      { gameId, players: { $elemMatch: { name: nominated[0].name } } },
+      { gameId, players: { $elemMatch: { _id: nominated[0]._id } } },
       {
         $set: { 'players.$.isAlive': false },
         stageComplete: true,
