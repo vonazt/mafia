@@ -6,7 +6,7 @@ const PlayerSchema = new Schema({
   role: String,
   isAlive: { type: Boolean, default: true },
   connected: { type: Boolean, default: true },
-  nominatedBy: [String],
+  nominatedBy: [{ type: Schema.Types.ObjectId, ref: 'Game' }],
 });
 
 const GameSchema = new Schema({
@@ -17,6 +17,7 @@ const GameSchema = new Schema({
 });
 
 export type Player = {
+  _id: string;
   socketId: string;
   name: string;
   role?: string;
@@ -37,4 +38,15 @@ export type IUpdateGamesDocument = Pick<
   'players' | 'gameId' | 'stageComplete' | 'lastPlayerKilled'
 >;
 
+export interface IPlayerDocument extends Document {
+  _id: string;
+  socketId: string;
+  name: string;
+  role?: string;
+  isAlive?: boolean;
+  nominatedBy?: Player[];
+  connected?: boolean;
+}
+
 export const GamesModel = model<IGamesDocument>(`Game`, GameSchema);
+export const PlayerModel = model<IPlayerDocument>(`Player`, PlayerSchema)

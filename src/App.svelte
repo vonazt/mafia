@@ -2,6 +2,7 @@
   import io from 'socket.io-client';
   const socket = io();
 
+  let thisPlayer = {};
   let name;
   let gameId;
 
@@ -14,8 +15,6 @@
   let mafia = [];
 
   $: joinedMafia = mafia.join(`, `);
-
-  let role = ``;
 
   const handleCreate = () => {
     socket.emit(`create`);
@@ -50,6 +49,7 @@
 
   socket.on(`addedPlayer`, (playersResponse) => {
     console.log('players response', playersResponse);
+    thisPlayer = playersResponse.find((player) => name === player.name);
     players = [...playersResponse];
   });
 
@@ -58,14 +58,15 @@
     players.filter(({ connected }) => connected),
   );
 
+  $: console.log('this player is', thisPlayer);
+
   socket.on(`role`, (assignedRole, otherMafia) => {
-    console.log('yo');
     console.log('your role is', assignedRole);
-    role = assignedRole;
+    thisPlayer = { ...thisPlayer, role: assignedRole };
     if (otherMafia) mafia = [...otherMafia];
   });
 
-  $: console.log('role is', role);
+  $: console.log('role is', thisPlayer.role);
 
   const handleStart = () => {
     socket.emit(`start`, gameId);
@@ -81,18 +82,14 @@
 
   const handleAssassinatePlayer = (playerToAssassinate) => {
     console.log('player to assassinate', playerToAssassinate);
-    // players = [
-    //   ...players.map((player) =>
-    //     player.name === playerToAssassinate.name
-    //       ? { ...player, nominated: true }
-    //       : player,
-    //   ),
-    // ];
-    socket.emit(`assassinate`, playerToAssassinate, name, gameId);
+    socket.emit(`assassinate`, playerToAssassinate, thisPlayer, gameId);
   };
 
   socket.on(`postAssassination`, (updatedGame) => {
     console.log('updated game is', updatedGame);
+    thisPlayer = updatedGame.players.find(
+      ({ name }) => name === thisPlayer.name,
+    );
     players = [...updatedGame.players];
     if (updatedGame.stageComplete) {
       playerToDie = updatedGame.lastPlayerKilled;
@@ -143,7 +140,7 @@
         </form>
         <ol>
           {#each players as player}
-            {#if role === `mafia`}
+            {#if thisPlayer.role === `mafia`}
               <input
                 type="radio"
                 value={player}
@@ -152,7 +149,7 @@
                   handleAssassinatePlayer(player);
                 }} />
             {/if}
-            <li class:mafia={role === `mafia`}>{player.name}</li>
+            <li class:mafia={thisPlayer.role === `mafia`}>{player.name}</li>
           {/each}
         </ol>
         Registered players:
@@ -161,9 +158,9 @@
           <button on:click={handleStart}>Start</button>
         {/if}
       </div>
-      {#if role}
+      {#if thisPlayer.role}
         <div width="100%">
-          <p>You are a {role}</p>
+          <p>You are a {thisPlayer.role}</p>
           {#if mafia.length}
             <p>The other mafia are {joinedMafia}</p>
           {/if}

@@ -3,6 +3,7 @@ import {
   IGamesDocument,
   IUpdateGamesDocument,
   Player,
+  PlayerModel,
 } from './mongoose';
 
 export const joinGame = async (gameId: string) => {
@@ -25,13 +26,20 @@ export const addPlayer = async (
     gameId,
     players: { $elemMatch: { name } },
   });
-  if (!playerAlreadyInGame)
+  if (!playerAlreadyInGame) {
+    const playerToSave = new PlayerModel({ name, socketId });
+    await playerToSave.save();
+
     return GamesModel.findOneAndUpdate(
       { gameId },
-      { $addToSet: { players: { name, socketId } } },
+      {
+        $addToSet: {
+          players: playerToSave,
+        },
+      },
       { new: true, useFindAndModify: false },
     );
-  else {
+  } else {
     return GamesModel.findOneAndUpdate(
       {
         gameId,
@@ -68,31 +76,32 @@ export const updatePlayers = async (
 
 export const assassinatePlayer = async (
   player: Player,
-  assassin: string,
+  mafiaHitman: Player,
   gameId: string,
 ): Promise<IUpdateGamesDocument> => {
-  // console.log('player to kill', player);
-  // console.log('game id', gameId);
-  console.log('assasin is', assassin)
   await GamesModel.findOneAndUpdate(
     {
       gameId,
-      players: { $elemMatch: { nominatedBy: { $in: assassin } } },
+      players: { $elemMatch: { nominatedBy: { $in: mafiaHitman._id } } },
     },
-    { $pull: { 'players.$.nominatedBy': assassin } },
+    { $pull: { 'players.$.nominatedBy': mafiaHitman._id } },
     { new: true, lean: true, useFindAndModify: false },
   );
-
   const updatedGame = await GamesModel.findOneAndUpdate(
     {
       gameId,
-      players: { $elemMatch: { name: player.name } },
+      players: { $elemMatch: { _id: player._id } },
     },
-    { $addToSet: { 'players.$.nominatedBy': assassin } },
+    { $addToSet: { 'players.$.nominatedBy': mafiaHitman._id } },
     { new: true, lean: true, useFindAndModify: false },
-  );
+  ).populate({
+    path: 'players',
+    populate: {
+      path: 'nominatedBy',
+      model: 'Player',
+    },
+  });
 
-  console.log('UPDATED GAME IN ASSASSINATE IS', updatedGame.players[0].nominatedBy);
   const { nominated, mafia } = updatedGame.players.reduce(
     (acc, currPlayer) => {
       if (currPlayer.nominatedBy.length && currPlayer.role === `mafia`) {
@@ -113,7 +122,11 @@ export const assassinatePlayer = async (
       mafia: [],
     },
   );
-  if (nominated.length === 1 && nominated[0].votes === mafia.length) {
+  if (
+    nominated.length === 1 &&
+    nominated[0].nominatedBy.length === mafia.length
+  ) {
+    console.log('PLAYER IS ABOUT TO DIE');
     const gameWithDeadPlayer = await GamesModel.findOneAndUpdate(
       { gameId, players: { $elemMatch: { name: nominated[0].name } } },
       {

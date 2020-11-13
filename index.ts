@@ -86,8 +86,8 @@ io.on('connection', (socket: Socket) => {
     io.to(gameId).emit(`readyToStart`);
   });
 
-  socket.on(`assassinate`, async (player: Player, assassin: string, gameId: string) => {
-    const updatedGame = await gameService.assassinatePlayer(player, assassin, gameId);
+  socket.on(`assassinate`, async (player: Player, mafiaHitman: Player, gameId: string) => {
+    const updatedGame = await gameService.assassinatePlayer(player, mafiaHitman, gameId);
     console.log('updated game is', updatedGame);
     const mafia = updatedGame.players.filter(({ role }) => role === `mafia`);
     await Promise.all(
