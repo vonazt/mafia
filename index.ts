@@ -37,11 +37,9 @@ io.on('connection', (socket: Socket) => {
   socket.on(
     `create`,
     async (): Promise<void> => {
-      console.log(`creating game`);
-      const gameId = await gameService.createGame();
-      console.log('created game', gameId);
-      socket.join(gameId);
-      io.to(gameId).emit(`createSuccess`, gameId);
+      const game = await gameService.createGame();
+      socket.join(game.gameId);
+      io.to(game.gameId).emit(`createSuccess`, game);
     },
   );
 
@@ -66,38 +64,49 @@ io.on('connection', (socket: Socket) => {
     },
   );
 
-  socket.on(`start`, async (gameId: string) => {
-    const playersWithAssignedRoles = await gameService.startGame(gameId);
+  socket.on(`start`, async (gameId: string): Promise<void> => {
+    const {players, stages} = await gameService.startGame(gameId);
     await Promise.all(
-      playersWithAssignedRoles.map((player) => {
+      players.map((player) => {
         if (player.role === `mafia`) {
-          const otherMafia = playersWithAssignedRoles
+          const otherMafia = players
             .filter(
               (otherPlayer) =>
                 otherPlayer.socketId !== player.socketId &&
                 otherPlayer.role === `mafia`,
             )
             .map(({ name }) => name);
-          io.to(player.socketId).emit(`role`, player.role, otherMafia);
+          io.to(player.socketId).emit(`gameStarted`, stages, player.role, otherMafia);
         }
-        io.to(player.socketId).emit(`role`, player.role);
+        io.to(player.socketId).emit(`gameStarted`, stages, player.role);
       }),
     );
     io.to(gameId).emit(`readyToStart`);
   });
 
-  socket.on(`assassinate`, async (player: Player, mafiaHitman: Player, gameId: string) => {
-    const updatedGame = await gameService.assassinatePlayer(player, mafiaHitman, gameId);
-    console.log('updated game is', updatedGame);
-    const mafia = updatedGame.players.filter(({ role }) => role === `mafia`);
-    await Promise.all(
-      mafia.map(({ socketId }) =>
-        io.to(socketId).emit(`postAssassination`, updatedGame),
-      ),
-    );
+  socket.on(
+    `assassinate`,
+    async (player: Player, mafiaHitman: Player, gameId: string): Promise<void> => {
+      const updatedGame = await gameService.assassinatePlayer(
+        player,
+        mafiaHitman,
+        gameId,
+      );
+      const mafia = updatedGame.players.filter(({ role }) => role === `mafia`);
+      await Promise.all(
+        mafia.map(({ socketId }) =>
+          io.to(socketId).emit(`postAssassination`, updatedGame),
+        ),
+      );
+    },
+  );
+
+  socket.on(`confirmKill`, async (playerToDie: Player, gameId: string): Promise<void> => {
+    const updatedGame = await gameService.killPlayer(playerToDie, gameId);
+    io.to(gameId).emit(`detectiveAwake`, updatedGame)
   });
 
-  socket.on(`disconnect`, async () => {
+  socket.on(`disconnect`, async (): Promise<void> => {
     await gameService.disconnectPlayerFromGame(socket.id);
   });
 

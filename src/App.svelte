@@ -16,13 +16,16 @@
 
   $: joinedMafia = mafia.join(`, `);
 
+  let stages = {};
+
   const handleCreate = () => {
     socket.emit(`create`);
   };
 
-  socket.on(`createSuccess`, (newGameId) => {
-    console.log('new game id', newGameId);
-    gameId = newGameId;
+  socket.on(`createSuccess`, (game) => {
+    console.log('new game is', game);
+    gameId = game.gameId;
+    stages = { ...game.stages };
   });
 
   socket.on(`joinSuccess`, (joinedGameId, playersResponse) => {
@@ -39,7 +42,7 @@
     socket.emit(`join`, joinId);
   };
 
-  console.log('game is id', gameId);
+  // console.log('game is id', gameId);
 
   const addPlayer = (e) => {
     e.preventDefault();
@@ -53,27 +56,26 @@
     players = [...playersResponse];
   });
 
-  $: console.log(
-    'connected players',
-    players.filter(({ connected }) => connected),
-  );
+  // $: console.log(
+  //   'connected players',
+  //   players.filter(({ connected }) => connected),
+  // );
 
-  $: console.log('this player is', thisPlayer);
+  // $: console.log('this player is', thisPlayer);
 
-  socket.on(`role`, (assignedRole, otherMafia) => {
+  socket.on(`gameStarted`, (updatedStages, assignedRole, otherMafia) => {
     console.log('your role is', assignedRole);
+    stages = { ...updatedStages };
     thisPlayer = { ...thisPlayer, role: assignedRole };
     if (otherMafia) mafia = [...otherMafia];
   });
 
-  $: console.log('role is', thisPlayer.role);
+  // $: console.log('role is', thisPlayer.role);
 
   const handleStart = () => {
     socket.emit(`start`, gameId);
   };
 
-  let day = false;
-  let mafiaAwake = false;
   let playerToDie;
 
   socket.on(`readyToStart`, () => {
@@ -86,18 +88,18 @@
   };
 
   socket.on(`postAssassination`, (updatedGame) => {
-    console.log('updated game is', updatedGame);
     thisPlayer = updatedGame.players.find(
       ({ name }) => name === thisPlayer.name,
     );
     players = [...updatedGame.players];
-    if (updatedGame.stageComplete) {
-      playerToDie = updatedGame.lastPlayerKilled;
+    if (updatedGame.nominatedPlayer) {
+      playerToDie = { ...updatedGame.nominatedPlayer };
     }
   });
 
   const handleConfirmKill = () => {
     console.log(`confirmed that ${playerToDie.name} will be killed`);
+    socket.emit(`confirmKill`, playerToDie, gameId);
   };
 
   const getNominatedBy = (nominatedBy) => {
@@ -178,13 +180,13 @@
           {/if}
         </div>
       {/if}
-      {#if mafiaAwake}
+      {#if stages.mafiaAwake}
         <p>
           Night settles on the city. The citizens go to sleep. The mafia awake.
           They chose someone to kill.
         </p>
       {/if}
-      {#if playerToDie && mafiaAwake}
+      {#if playerToDie && stages.mafiaAwake}
         <p>{playerToDie.name} will be sent to sleep with the fishes</p>
         <button on:click={handleConfirmKill}>Confirm</button>
       {/if}

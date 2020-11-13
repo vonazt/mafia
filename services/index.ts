@@ -1,4 +1,4 @@
-import { Player } from '../repositories/mongoose';
+import { IUpdateGamesDocument, Player } from '../repositories/mongoose';
 import * as gameRepository from '../repositories';
 
 export const joinGame = gameRepository.joinGame;
@@ -7,15 +7,22 @@ export const createGame = gameRepository.createGame;
 
 export const addPlayer = gameRepository.addPlayer;
 
-export const startGame = async (gameId: string): Promise<Player[]> => {
+export const startGame = async (
+  gameId: string,
+): Promise<IUpdateGamesDocument> => {
   const players: Player[] = await gameRepository.listPlayers(gameId);
   const roles: string[] = createRoles(players);
-  const playersWithAssignedRoles = players.map((player: Player, index: number) => ({
-    ...player,
-    role: roles[index],
-  }));
-  await gameRepository.updatePlayers(gameId, playersWithAssignedRoles)
-  return playersWithAssignedRoles
+  const playersWithAssignedRoles = players.map(
+    (player: Player, index: number) => ({
+      ...player,
+      role: roles[index],
+    }),
+  );
+  const updatedGame = await gameRepository.startGame(
+    gameId,
+    playersWithAssignedRoles,
+  );
+  return updatedGame;
 };
 
 const shuffleRoles = (roles: string[]): string[] => {
@@ -55,8 +62,10 @@ export const createRoles = (players: Player[]): string[] => {
   return shuffleRoles(combinedRoles);
 };
 
-export const assassinatePlayer = gameRepository.assassinatePlayer
+export const assassinatePlayer = gameRepository.assassinatePlayer;
 
-export const disconnectPlayerFromGame = gameRepository.disconnectPlayerFromGame
+export const killPlayer = gameRepository.killPlayer;
 
-export const removePlayerFromGame = gameRepository.removePlayerFromGame
+export const disconnectPlayerFromGame = gameRepository.disconnectPlayerFromGame;
+
+export const removePlayerFromGame = gameRepository.removePlayerFromGame;

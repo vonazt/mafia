@@ -9,10 +9,19 @@ const PlayerSchema = new Schema({
   nominatedBy: [{ type: Schema.Types.ObjectId, ref: 'Game' }],
 });
 
+const StageSchema = {
+  intro: { type: Boolean, default: true },
+  mafiaAwake: { type: Boolean, default: false },
+  detectiveAwake: { type: Boolean, default: false },
+  guardianAngelAwake: { type: Boolean, default: false },
+  day: { type: Boolean, default: false },
+};
+
 const GameSchema = new Schema({
   players: [PlayerSchema],
   gameId: String,
-  stageComplete: { type: Boolean, default: false },
+  stages: StageSchema,
+  nominatedPlayer: PlayerSchema,
   lastPlayerKilled: PlayerSchema,
 });
 
@@ -26,16 +35,25 @@ export type Player = {
   connected?: boolean;
 };
 
+type Stages = {
+  intro: boolean;
+  mafiaAwake: boolean;
+  detectiveAwake: boolean;
+  guardianAngelAwake: boolean;
+  day: boolean;
+}
+
 export interface IGamesDocument extends Document {
   players: Player[];
   gameId: string;
-  stageComplete: boolean;
+  stages: Stages;
   lastPlayerKilled: Player;
+  nominatedPlayer: Player;
 }
 
 export type IUpdateGamesDocument = Pick<
   IGamesDocument,
-  'players' | 'gameId' | 'stageComplete' | 'lastPlayerKilled'
+  'players' | 'gameId' | 'stages' | 'lastPlayerKilled'
 >;
 
 export interface IPlayerDocument extends Document {
@@ -49,4 +67,4 @@ export interface IPlayerDocument extends Document {
 }
 
 export const GamesModel = model<IGamesDocument>(`Game`, GameSchema);
-export const PlayerModel = model<IPlayerDocument>(`Player`, PlayerSchema)
+export const PlayerModel = model<IPlayerDocument>(`Player`, PlayerSchema);

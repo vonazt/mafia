@@ -10,11 +10,11 @@ export const joinGame = async (gameId: string) => {
   return GamesModel.findOne({ gameId });
 };
 
-export const createGame = async (): Promise<string> => {
+export const createGame = async (): Promise<IGamesDocument> => {
   const gameId = Math.floor(1000 + Math.random() * 9000).toString();
   const gameToSave = new GamesModel({ gameId });
   await gameToSave.save();
-  return gameId;
+  return gameToSave;
 };
 
 export const addPlayer = async (
@@ -58,13 +58,13 @@ export const listPlayers = async (gameId: string): Promise<Player[]> => {
   return players;
 };
 
-export const updatePlayers = async (
+export const startGame = async (
   gameId: string,
   players: Player[],
 ): Promise<IUpdateGamesDocument> => {
   const result = await GamesModel.findOneAndUpdate(
     { gameId },
-    { players },
+    { players, $set: { 'stages.intro': false, 'stages.mafiaAwake': true } },
     {
       useFindAndModify: false,
       new: true,
@@ -129,17 +129,30 @@ export const assassinatePlayer = async (
     nominated[0].nominatedBy.length === mafia.length
   ) {
     console.log('PLAYER IS ABOUT TO DIE');
-    const gameWithDeadPlayer = await GamesModel.findOneAndUpdate(
+    return GamesModel.findOneAndUpdate(
       { gameId, players: { $elemMatch: { _id: nominated[0]._id } } },
       {
-        $set: { 'players.$.isAlive': false },
-        stageComplete: true,
-        lastPlayerKilled: nominated[0],
+        nominatedPlayer: nominated[0],
       },
       { useFindAndModify: false, new: true, lean: true },
     );
-    return gameWithDeadPlayer;
   }
+  return updatedGame;
+};
+
+export const killPlayer = async (
+  playerToDie: Player,
+  gameId: string,
+): Promise<IUpdateGamesDocument> => {
+  const updatedGame = await GamesModel.findOneAndUpdate(
+    { gameId },
+    {
+      lastPlayerKilled: playerToDie,
+      $set: { 'stages.mafiaAwake': false, 'stages.detectiveAwake': true },
+    },
+    { new: true, lean: true, useFindAndModify: false },
+  );
+  console.log('updated gma ei', updatedGame);
   return updatedGame;
 };
 
