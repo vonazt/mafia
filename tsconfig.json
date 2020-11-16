@@ -8,18 +8,19 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "*": [
-        "node_modules/*"
-      ]
+      "*": ["node_modules/*"]
     },
-    "lib": ["esnext.asynciterable"],  
+    "lib": ["esnext.asynciterable"],
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
   },
-  "include": [
-    "graphql/*",
-    "index.ts",
-    "models/*",
-    "db/*"
-  ]
+  "rules": {
+    "typedef": [
+      true,
+      "call-signature",
+      "property-declaration",
+      "arrow-call-signature"
+    ]
+  },
+  "include": ["graphql/*", "index.ts", "models/*", "db/*"]
 }

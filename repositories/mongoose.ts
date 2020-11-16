@@ -6,7 +6,7 @@ const PlayerSchema = new Schema({
   role: String,
   isAlive: { type: Boolean, default: true },
   connected: { type: Boolean, default: true },
-  nominatedBy: [{ type: Schema.Types.ObjectId, ref: 'Game' }],
+  nominatedBy: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
 });
 
 const StageSchema = {
@@ -18,15 +18,15 @@ const StageSchema = {
 };
 
 const GameSchema = new Schema({
-  players: [PlayerSchema],
+  players: [{ type: Schema.Types.ObjectId, ref: `Player` }],
   gameId: String,
   stages: StageSchema,
-  nominatedPlayer: PlayerSchema,
-  lastPlayerKilled: PlayerSchema,
+  nominatedPlayer: { type: Schema.Types.ObjectId, ref: `Player` },
+  lastPlayerKilled: { type: Schema.Types.ObjectId, ref: `Player` },
 });
 
 export type Player = {
-  _id: string;
+  _id: Schema.Types.ObjectId;
   socketId: string;
   name: string;
   role?: string;
@@ -41,28 +41,38 @@ type Stages = {
   detectiveAwake: boolean;
   guardianAngelAwake: boolean;
   day: boolean;
-}
+};
 
 export interface IGamesDocument extends Document {
-  players: Player[];
+  players: Schema.Types.ObjectId[] | Player[];
   gameId: string;
   stages: Stages;
   lastPlayerKilled: Player;
   nominatedPlayer: Player;
 }
 
-export type IUpdateGamesDocument = Pick<
+export type ILeanGamesDocument = Pick<
   IGamesDocument,
-  'players' | 'gameId' | 'stages' | 'lastPlayerKilled'
+  | 'players'
+  | 'gameId'
+  | 'stages'
+  | 'lastPlayerKilled'
+  | '_id'
+  | 'nominatedPlayer'
+>;
+
+export type ILeanPlayerDocument = Pick<
+  IPlayerDocument,
+  '_id' | 'socketId' | 'name' | 'role' | 'isAlive' | 'nominatedBy' | 'connected'
 >;
 
 export interface IPlayerDocument extends Document {
-  _id: string;
+  _id: Schema.Types.ObjectId;
   socketId: string;
   name: string;
   role?: string;
   isAlive?: boolean;
-  nominatedBy?: Player[];
+  nominatedBy?: Schema.Types.ObjectId[] | Player[];
   connected?: boolean;
 }
 

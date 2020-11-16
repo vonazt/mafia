@@ -2,8 +2,7 @@
   import io from 'socket.io-client';
   const socket = io();
 
-  let thisPlayer = {};
-  let name;
+  let thisPlayer = { name: `` };
   let gameId;
 
   let joinId;
@@ -17,6 +16,10 @@
   $: joinedMafia = mafia.join(`, `);
 
   let stages = {};
+
+  let confirmInvestigation = false;
+
+  $: console.log('stages are', stages);
 
   const handleCreate = () => {
     socket.emit(`create`);
@@ -46,13 +49,15 @@
 
   const addPlayer = (e) => {
     e.preventDefault();
-    console.log('adding player', name);
-    socket.emit(`add`, gameId, name);
+    console.log('adding player', thisPlayer);
+    socket.emit(`add`, gameId, thisPlayer);
   };
 
   socket.on(`addedPlayer`, (playersResponse) => {
     console.log('players response', playersResponse);
-    thisPlayer = playersResponse.find((player) => name === player.name);
+    thisPlayer = playersResponse.find(
+      (player) => thisPlayer.name === player.name,
+    );
     players = [...playersResponse];
   });
 
@@ -63,9 +68,8 @@
 
   // $: console.log('this player is', thisPlayer);
 
-  socket.on(`gameStarted`, (updatedStages, assignedRole, otherMafia) => {
+  socket.on(`assignedRoles`, (assignedRole, otherMafia) => {
     console.log('your role is', assignedRole);
-    stages = { ...updatedStages };
     thisPlayer = { ...thisPlayer, role: assignedRole };
     if (otherMafia) mafia = [...otherMafia];
   });
@@ -78,13 +82,20 @@
 
   let playerToDie;
 
-  socket.on(`readyToStart`, () => {
-    mafiaAwake = true;
+  socket.on(`gameStarted`, (updatedStages) => {
+    stages = { ...updatedStages };
   });
 
-  const handleAssassinatePlayer = (playerToAssassinate) => {
-    console.log('player to assassinate', playerToAssassinate);
-    socket.emit(`assassinate`, playerToAssassinate, thisPlayer, gameId);
+  const handleNominatePlayer = (playerToNominate) => {
+    console.log('player to assassinate', playerToNominate);
+    if (stages.mafiaAwake) {
+      return socket.emit(`assassinate`, playerToNominate, thisPlayer, gameId);
+    }
+    if (stages.detectiveAwake) {
+      confirmInvestigation = false;
+      investigating = true;
+      return socket.emit(`investigate`, playerToNominate, thisPlayer, gameId);
+    }
   };
 
   socket.on(`postAssassination`, (updatedGame) => {
@@ -108,6 +119,40 @@
       .map(({ name }) => name);
     return nominators.length ? `Nominated by ${nominators.join(`, `)}` : ``;
   };
+
+  socket.on(`detectiveAwake`, (updatedGame) => {
+    stages = { ...updatedGame.stages };
+  });
+  let investigating = false;
+
+  let playerToInvestigate = {};
+  const handleConfirmInvestigation = (player) => {
+    playerToInvestigate = { ...player };
+    confirmInvestigation = true;
+  };
+
+  let investigationResult = ``;
+
+  socket.on(`investigationResult`, (isMafia, investigatedPlayer) => {
+    investigating = false;
+    investigationResult = `${investigatedPlayer.name} ${
+      isMafia ? `is` : `is not`
+    } a member of the mafia`;
+  });
+
+  const handleEndDetectiveStage = () => {
+    investigationResult = ``;
+    socket.emit(`endDetectiveTurn`, gameId);
+  };
+
+  let deadPlayers = [];
+
+  socket.on(`day`, (updatedGame) => {
+    console.log('updated game is', updatedGame);
+    stages = { ...updatedGame.stages };
+    deadPlayers = [...deadPlayers, updatedGame.lastPlayerKilled];
+    players = [...updatedGame.players];
+  });
 </script>
 
 <style>
@@ -124,6 +169,10 @@
 
   .mafia {
     cursor: pointer;
+  }
+
+  .dead {
+    text-decoration: line-through;
   }
 </style>
 
@@ -144,21 +193,28 @@
       </div>
       <div width="100%">
         <form>
-          <label>Name <input bind:value={name} /></label><button
+          <label>Name <input bind:value={thisPlayer.name} /></label><button
             on:click={addPlayer}>Add player</button>
         </form>
         <ol>
           {#each players as player}
-            {#if thisPlayer.role === `mafia`}
+            {#if (player.isAlive && thisPlayer.role === `mafia` && stages.mafiaAwake) || (thisPlayer.role === `detective` && stages.detectiveAwake && !investigating)}
               <input
                 type="radio"
                 value={player}
                 bind:group={playerToNominate}
                 on:click={() => {
-                  handleAssassinatePlayer(player);
+                  if (stages.mafiaAwake) {
+                    handleNominatePlayer(player);
+                  }
+                  if (stages.detectiveAwake) {
+                    handleConfirmInvestigation(player);
+                  }
                 }} />
             {/if}
-            <li class:mafia={thisPlayer.role === `mafia`}>
+            <li
+              class:mafia={thisPlayer.role === `mafia`}
+              class:dead={!player.isAlive}>
               {player.name}
               {#if thisPlayer.role === `mafia` && player.nominatedBy.length}
                 <span>{getNominatedBy(player.nominatedBy)}</span>
@@ -189,6 +245,28 @@
       {#if playerToDie && stages.mafiaAwake}
         <p>{playerToDie.name} will be sent to sleep with the fishes</p>
         <button on:click={handleConfirmKill}>Confirm</button>
+      {/if}
+      {#if stages.detectiveAwake}
+        <p>A murder has been committed this night.</p>
+        <p>The detective awakens to begin their investigations</p>
+        {#if confirmInvestigation}
+          <button
+            on:click={() => handleNominatePlayer(playerToInvestigate)}>Investigate
+            {playerToInvestigate.name}?</button>
+        {/if}
+        {#if investigationResult}
+          <p>{investigationResult}</p>
+          <button on:click={() => handleEndDetectiveStage()}>OK</button>
+        {/if}
+
+        {#if stages.day}
+          <p>
+            A murder has been committed.
+            {[deadPlayers][deadPlayers.length - 1].name}
+            has been murdered in their sleep.
+          </p>
+          <p>The townfolk gather to find the criminals in their midst.</p>
+        {/if}
       {/if}
     {/if}
   </div>

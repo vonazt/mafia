@@ -1,7 +1,7 @@
-import { IUpdateGamesDocument, Player } from '../repositories/mongoose';
+import { ILeanGamesDocument, Player } from '../repositories/mongoose';
 import * as gameRepository from '../repositories';
 
-export const joinGame = gameRepository.joinGame;
+export const joinGame = gameRepository.listPlayersInGame;
 
 export const createGame = gameRepository.createGame;
 
@@ -9,8 +9,8 @@ export const addPlayer = gameRepository.addPlayer;
 
 export const startGame = async (
   gameId: string,
-): Promise<IUpdateGamesDocument> => {
-  const players: Player[] = await gameRepository.listPlayers(gameId);
+) => {
+  const players: Player[] = await gameRepository.listPlayersInGame(gameId);
   const roles: string[] = createRoles(players);
   const playersWithAssignedRoles = players.map(
     (player: Player, index: number) => ({
@@ -69,3 +69,7 @@ export const killPlayer = gameRepository.killPlayer;
 export const disconnectPlayerFromGame = gameRepository.disconnectPlayerFromGame;
 
 export const removePlayerFromGame = gameRepository.removePlayerFromGame;
+
+export const investigatePlayer = gameRepository.investigatePlayer
+
+export const endDetectiveTurn = gameRepository.endDetectiveTurn
