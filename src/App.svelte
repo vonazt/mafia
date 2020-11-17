@@ -207,6 +207,7 @@
         !investigating) ||
       (stages.day && player.isAlive && thisPlayer.isAlive) ||
       (!nominating &&
+        thisPlayer.isAlive &&
         stages.twoNominations &&
         nominatedPlayers.some(({ _id }) => _id === player._id))
     );

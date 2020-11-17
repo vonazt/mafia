@@ -51,12 +51,12 @@ const updatePlayer = async (filter: {}, operation: {}) =>
     useFindAndModify: false,
   });
 
-export const createGame = async (): Promise<IGamesDocument> => {
-  const gameId = Math.floor(1000 + Math.random() * 9000).toString();
-  const gameToSave = new GamesModel({ gameId });
-  await gameToSave.save();
-  return gameToSave;
-};
+// export const createGame = async (): Promise<IGamesDocument> => {
+//   const gameId = Math.floor(1000 + Math.random() * 9000).toString();
+//   const gameToSave = new GamesModel({ gameId });
+//   await gameToSave.save();
+//   return gameToSave;
+// };
 
 export const addPlayer = async (
   gameId: string,

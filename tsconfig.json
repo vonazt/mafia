@@ -22,5 +22,5 @@
       "arrow-call-signature"
     ]
   },
-  "include": ["graphql/*", "index.ts", "models/*", "socketIO/*"]
+  "include": ["graphql/*", "index.ts", "models/*", "socketIO/*", "DomainObjects/*"]
 }
