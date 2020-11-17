@@ -38,7 +38,7 @@ export type Player = {
   connected?: boolean;
 };
 
-type Stages = {
+export type Stages = {
   intro: boolean;
   mafiaAwake: boolean;
   detectiveAwake: boolean;
@@ -50,7 +50,7 @@ type Stages = {
 };
 
 export interface IGamesDocument extends Document {
-  players: Schema.Types.ObjectId[] | Player[];
+  players: Player[];
   gameId: string;
   stages: Stages;
   lastPlayerKilled: Player;
@@ -78,7 +78,7 @@ export interface IPlayerDocument extends Document {
   name: string;
   role?: string;
   isAlive?: boolean;
-  nominatedBy?: Schema.Types.ObjectId[] | Player[];
+  nominatedBy?: Player[];
   connected?: boolean;
 }
 

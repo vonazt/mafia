@@ -65,7 +65,7 @@ export const addPlayer = async (
 ): Promise<ILeanGamesDocument> => {
   const { players } = await getGameById(gameId);
 
-  const playerAlreadyInGame = (players as Player[]).find(
+  const playerAlreadyInGame = (players).find(
     ({ name }) => name === player.name,
   );
   if (!playerAlreadyInGame) {
@@ -90,7 +90,7 @@ export const addPlayer = async (
 export const listPlayersInGame = async (gameId: string): Promise<Player[]> => {
   try {
     const { players } = await getGameById(gameId);
-    return players as Player[];
+    return players;
   } catch (err) {
     console.error(`No game found`);
     return null;
@@ -133,7 +133,7 @@ export const assassinatePlayer = async (
   const updatedGame = await getGameById(gameId);
 
   const { nominated, mafia } = getNominatedAndMafia(
-    updatedGame.players as Player[],
+    updatedGame.players,
   );
 
   if (
@@ -154,11 +154,10 @@ export const nominatePlayer = async (
 ): Promise<ILeanGamesDocument> => {
   await handlePlayerNomination(playerToNominate, nominatedBy);
   const updatedGame = await getGameById(gameId);
-  console.log('updated game with alive players', updatedGame);
-  const nominatedPlayers = (updatedGame.players as Player[]).filter(
+  const nominatedPlayers = (updatedGame.players).filter(
     ({ nominatedBy }) => nominatedBy.length,
   );
-  const alive = (updatedGame.players as Player[]).filter(
+  const alive = (updatedGame.players).filter(
     ({ isAlive }) => isAlive,
   );
   //TODO: ACCOUNT FOR PLAYER NOMINATING THEMSELVES
@@ -170,9 +169,8 @@ export const nominatePlayer = async (
       [],
     ).length === alive.length
   ) {
-    console.log('TWO NOMINATIONS');
     await Promise.all(
-      (updatedGame.players as Player[]).map((player) =>
+      (updatedGame.players).map((player) =>
         updatePlayerById(player._id, { nominatedBy: [] }),
       ),
     );
@@ -209,11 +207,11 @@ export const lynchPlayer = async (
 ) => {
   await handlePlayerNomination(playerToLynch, nominatedBy);
   const updatedGame = await getGameById(gameId)
-  const nominatedPlayers = (updatedGame.players as Player[]).filter(
+  const nominatedPlayers = (updatedGame.players).filter(
     ({ nominatedBy }) => nominatedBy.length,
   );
 
-  const alive = (updatedGame.players as Player[]).filter(
+  const alive = (updatedGame.players).filter(
     ({ isAlive }) => isAlive,
   );
 
@@ -224,7 +222,6 @@ export const lynchPlayer = async (
       [],
     ).length === alive.length
   ) {
-    console.log('WE HAVE A CONSENSUS', nominatedPlayers);
     if (
       nominatedPlayers[0].nominatedBy.length ===
       nominatedPlayers[1].nominatedBy.length
@@ -240,7 +237,7 @@ export const lynchPlayer = async (
         : nominatedPlayers[1];
 
     await Promise.all(
-      (updatedGame.players as Player[]).map(({ _id }) =>
+      (updatedGame.players).map(({ _id }) =>
         _id === lynchedPlayer._id
           ? updatePlayerById(_id, {
               isAlive: false,
@@ -274,7 +271,7 @@ export const endDetectiveTurn = async (
   gameId: string,
 ): Promise<ILeanGamesDocument> => {
   const { players, stages } = await getGameById(gameId);
-  const gameHasGuardianAngel = (players as Player[]).find(
+  const gameHasGuardianAngel = (players).find(
     ({ role }) => role === `guardianAngel`,
   );
 
