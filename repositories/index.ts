@@ -7,44 +7,44 @@ import {
   PlayerModel,
 } from './mongoose';
 
-const getGameById = async (gameId: string): Promise<ILeanGamesDocument> =>
-  GamesModel.findOne({ gameId }, null, { lean: true })
-    .populate(`players`)
-    .populate({
-      path: 'players',
-      populate: {
-        path: 'nominatedBy',
-        model: 'Player',
-      },
-    })
-    .populate(`lastPlayerKilled`)
-    .populate(`nominatedPlayers`)
+// const getGameById = async (gameId: string): Promise<ILeanGamesDocument> =>
+//   GamesModel.findOne({ gameId }, null, { lean: true })
+//     .populate(`players`)
+//     .populate({
+//       path: 'players',
+//       populate: {
+//         path: 'nominatedBy',
+//         model: 'Player',
+//       },
+//     })
+//     .populate(`lastPlayerKilled`)
+//     .populate(`nominatedPlayers`)
 
-const updateGame = async (gameId: string, operation: {}) =>
-  GamesModel.findOneAndUpdate({ gameId }, operation, {
-    new: true,
-    useFindAndModify: false,
-  })
-    .populate(`players`)
-    .populate({
-      path: 'players',
-      populate: {
-        path: 'nominatedBy',
-        model: 'Player',
-      },
-    })
-    .populate(`lastPlayerKilled`)
-    .populate(`nominatedPlayers`);
+// const updateGame = async (gameId: string, operation: {}) =>
+//   GamesModel.findOneAndUpdate({ gameId }, operation, {
+//     new: true,
+//     useFindAndModify: false,
+//   })
+//     .populate(`players`)
+//     .populate({
+//       path: 'players',
+//       populate: {
+//         path: 'nominatedBy',
+//         model: 'Player',
+//       },
+//     })
+//     .populate(`lastPlayerKilled`)
+//     .populate(`nominatedPlayers`);
 
 const getPlayerById = async (_id: Object, projection: string) =>
   PlayerModel.findById({ _id }, projection, { lean: true });
 
-const updatePlayerById = async (_id: Object, operation: {}) =>
-  PlayerModel.findByIdAndUpdate({ _id }, operation, {
-    useFindAndModify: false,
-    new: true,
-    lean: true,
-  });
+// const updatePlayerById = async (_id: Object, operation: {}) =>
+//   PlayerModel.findByIdAndUpdate({ _id }, operation, {
+//     useFindAndModify: false,
+//     new: true,
+//     lean: true,
+//   });
 
 const updatePlayer = async (filter: {}, operation: {}) =>
   PlayerModel.findOneAndUpdate(filter, operation, {
@@ -97,18 +97,18 @@ export const listPlayersInGame = async (gameId: string): Promise<Player[]> => {
   }
 };
 
-export const startGame = async (
-  gameId: string,
-  players: Player[],
-): Promise<ILeanGamesDocument> => {
-  await Promise.all(
-    players.map(({ _id, role }) => updatePlayerById(_id, { role })),
-  );
-  return updateGame(gameId, {
-    players: players.map(({ _id }) => _id),
-    $set: { 'stages.intro': false, 'stages.mafiaAwake': true },
-  });
-};
+// export const startGame = async (
+//   gameId: string,
+//   players: Player[],
+// ): Promise<ILeanGamesDocument> => {
+//   await Promise.all(
+//     players.map(({ _id, role }) => updatePlayerById(_id, { role })),
+//   );
+//   return updateGame(gameId, {
+//     players: players.map(({ _id }) => _id),
+//     $set: { 'stages.intro': false, 'stages.mafiaAwake': true },
+//   });
+// };
 
 const handlePlayerNomination = async (
   playerToNominate: Player,

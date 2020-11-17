@@ -1,8 +1,8 @@
 import ioserver, { Socket } from 'socket.io';
-import{ IGameHandler } from '../Handlers/GameHandler';
+import { IGameHandler } from '../Handlers/GameHandler';
 import GameHandlerFactory from '../Factories/GameHandlerFactory';
 import PlayerHandler from './PlayerHandler';
-// import { Player } from '../repositories/mongoose';
+import { Player } from '../DomainObjects/Player';
 
 const sockets = (io: ioserver.Server) => async (
   socket: Socket,
@@ -12,7 +12,7 @@ const sockets = (io: ioserver.Server) => async (
 
   const gameHandler: IGameHandler = GameHandlerFactory.build(io, socket);
 
-  const playerHandler = new PlayerHandler(io, socket);
+  const playerHandler: IPlayerHandler = new PlayerHandler(io, socket);
 
   socket.on(`create`, async (): Promise<void> => gameHandler.create());
 
@@ -21,9 +21,9 @@ const sockets = (io: ioserver.Server) => async (
     async (gameId: string): Promise<void> => gameHandler.join(gameId),
   );
 
-  // socket.on(`add`, async (gameId: string, player: Player) =>
-  //   playerHandler.add(gameId, player),
-  // );
+  socket.on(`add`, async (gameId: string, player: Player) =>
+    playerHandler.add(gameId, player),
+  );
 
   // socket.on(`start`, async (gameId: string) => gameHandler.start(gameId));
 

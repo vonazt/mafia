@@ -1,13 +1,13 @@
 import { Schema, model, Document } from 'mongoose';
 
-const PlayerSchema = new Schema({
-  socketId: String,
-  name: String,
-  role: String,
-  isAlive: { type: Boolean, default: true },
-  connected: { type: Boolean, default: true },
-  nominatedBy: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
-});
+// const PlayerSchema = new Schema({
+//   socketId: String,
+//   name: String,
+//   role: String,
+//   isAlive: { type: Boolean, default: true },
+//   connected: { type: Boolean, default: true },
+//   nominatedBy: [{ type: Schema.Types.ObjectId, ref: 'Player' }],
+// });
 
 // const StageSchema = {
 //   intro: { type: Boolean, default: true },
@@ -65,15 +65,15 @@ export type ILeanPlayerDocument = Pick<
   '_id' | 'socketId' | 'name' | 'role' | 'isAlive' | 'nominatedBy' | 'connected'
 >;
 
-export interface IPlayerDocument extends Document {
-  _id: Schema.Types.ObjectId;
-  socketId: string;
-  name: string;
-  role?: string;
-  isAlive?: boolean;
-  nominatedBy?: Player[];
-  connected?: boolean;
-}
+// export interface IPlayerDocument extends Document {
+//   _id: Schema.Types.ObjectId;
+//   socketId: string;
+//   name: string;
+//   role?: string;
+//   isAlive?: boolean;
+//   nominatedBy?: Player[];
+//   connected?: boolean;
+// }
 
 // const GamesModel = model<IGamesDocument>(`Game`, GameSchema);
-export const PlayerModel = model<IPlayerDocument>(`Player`, PlayerSchema);
+
