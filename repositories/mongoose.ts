@@ -15,13 +15,16 @@ const StageSchema = {
   detectiveAwake: { type: Boolean, default: false },
   guardianAngelAwake: { type: Boolean, default: false },
   day: { type: Boolean, default: false },
+  twoNominations: { type: Boolean, default: false },
+  tie: { type: Boolean, default: false },
+  playerLynched: { type: Boolean, default: false },
 };
 
 const GameSchema = new Schema({
   players: [{ type: Schema.Types.ObjectId, ref: `Player` }],
   gameId: String,
   stages: StageSchema,
-  nominatedPlayer: { type: Schema.Types.ObjectId, ref: `Player` },
+  nominatedPlayers: [{ type: Schema.Types.ObjectId, ref: `Player` }],
   lastPlayerKilled: { type: Schema.Types.ObjectId, ref: `Player` },
 });
 
@@ -41,6 +44,9 @@ type Stages = {
   detectiveAwake: boolean;
   guardianAngelAwake: boolean;
   day: boolean;
+  twoNominations: boolean;
+  tie: boolean;
+  playerLynched: boolean;
 };
 
 export interface IGamesDocument extends Document {
@@ -48,7 +54,7 @@ export interface IGamesDocument extends Document {
   gameId: string;
   stages: Stages;
   lastPlayerKilled: Player;
-  nominatedPlayer: Player;
+  nominatedPlayers: Player[];
 }
 
 export type ILeanGamesDocument = Pick<
@@ -58,7 +64,7 @@ export type ILeanGamesDocument = Pick<
   | 'stages'
   | 'lastPlayerKilled'
   | '_id'
-  | 'nominatedPlayer'
+  | 'nominatedPlayers'
 >;
 
 export type ILeanPlayerDocument = Pick<

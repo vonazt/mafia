@@ -10,7 +10,7 @@
   let gameError;
 
   let players = [];
-  let playerToNominate;
+  let playerToNominate = {};
   let mafia = [];
 
   $: joinedMafia = mafia.join(`, `);
@@ -86,8 +86,8 @@
     stages = { ...updatedStages };
   });
 
+  let nominating = false;
   const handleNominatePlayer = (playerToNominate) => {
-    console.log('player to assassinate', playerToNominate);
     if (stages.mafiaAwake) {
       return socket.emit(`assassinate`, playerToNominate, thisPlayer, gameId);
     }
@@ -96,6 +96,17 @@
       investigating = true;
       return socket.emit(`investigate`, playerToNominate, thisPlayer, gameId);
     }
+    if (stages.day) {
+      playerToNominate = { ...playerToNominate };
+      return socket.emit(`nominate`, playerToNominate, thisPlayer, gameId);
+    }
+    if (stages.twoNominations) {
+      console.log('lynching player');
+      confirmNomination = false;
+      nominating = true;
+      playerToNominate = { ...playerToNominate };
+      return socket.emit(`lynch`, playerToNominate, thisPlayer, gameId);
+    }
   };
 
   socket.on(`postAssassination`, (updatedGame) => {
@@ -103,8 +114,8 @@
       ({ name }) => name === thisPlayer.name,
     );
     players = [...updatedGame.players];
-    if (updatedGame.nominatedPlayer) {
-      playerToDie = { ...updatedGame.nominatedPlayer };
+    if (updatedGame.nominatedPlayers.length) {
+      playerToDie = { ...updatedGame.nominatedPlayers[0] };
     }
   });
 
@@ -146,13 +157,60 @@
   };
 
   let deadPlayers = [];
+  $: console.log('dead players are', deadPlayers);
+
+  let lastPlayerKilled = {};
 
   socket.on(`day`, (updatedGame) => {
     console.log('updated game is', updatedGame);
     stages = { ...updatedGame.stages };
-    deadPlayers = [...deadPlayers, updatedGame.lastPlayerKilled];
+    lastPlayerKilled = { ...updatedGame.lastPlayerKilled };
+    thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
     players = [...updatedGame.players];
   });
+
+  let confirmNomination = false;
+  const handleConfirmNomination = (player) => {
+    playerToNominate = { ...player };
+    confirmNomination = true;
+  };
+
+  let nominatedPlayers = [];
+
+  socket.on(`postNomination`, (updatedGame) => {
+    console.log('updated hame post nonmination', updatedGame);
+    players = [...updatedGame.players];
+    stages = { ...updatedGame.stages };
+    thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
+    nominatedPlayers = [...updatedGame.nominatedPlayers];
+  });
+
+  socket.on(`postLynching`, (updatedGame) => {
+    console.log('updated hame post ly ching', updatedGame);
+    players = [...updatedGame.players];
+    stages = { ...updatedGame.stages };
+    thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
+    lastPlayerKilled = { ...updatedGame.lastPlayerKilled };
+    nominatedPlayers = [...updatedGame.nominatedPlayers];
+  });
+
+  $: console.log('players area', players);
+
+  $: console.log('stages are', stages);
+
+  const canNominate = (player, thisPlayer, stages) => {
+    return (
+      (player.isAlive && thisPlayer.role === `mafia` && stages.mafiaAwake) ||
+      (thisPlayer.role === `detective` &&
+        thisPlayer.isAlive &&
+        stages.detectiveAwake &&
+        !investigating) ||
+      (stages.day && player.isAlive && thisPlayer.isAlive) ||
+      (!nominating &&
+        stages.twoNominations &&
+        nominatedPlayers.some(({ _id }) => _id === player._id))
+    );
+  };
 </script>
 
 <style>
@@ -198,7 +256,7 @@
         </form>
         <ol>
           {#each players as player}
-            {#if (player.isAlive && thisPlayer.role === `mafia` && stages.mafiaAwake) || (thisPlayer.role === `detective` && stages.detectiveAwake && !investigating)}
+            {#if canNominate(player, thisPlayer, stages)}
               <input
                 type="radio"
                 value={player}
@@ -210,13 +268,19 @@
                   if (stages.detectiveAwake) {
                     handleConfirmInvestigation(player);
                   }
+                  if (stages.day) {
+                    handleNominatePlayer(player);
+                  }
+                  if (stages.twoNominations) {
+                    handleConfirmNomination(player);
+                  }
                 }} />
             {/if}
             <li
               class:mafia={thisPlayer.role === `mafia`}
               class:dead={!player.isAlive}>
               {player.name}
-              {#if thisPlayer.role === `mafia` && player.nominatedBy.length}
+              {#if (thisPlayer.role === `mafia` && player.nominatedBy.length) || (stages.day && player.isAlive && player.nominatedBy.length)}
                 <span>{getNominatedBy(player.nominatedBy)}</span>
               {/if}
             </li>
@@ -258,15 +322,32 @@
           <p>{investigationResult}</p>
           <button on:click={() => handleEndDetectiveStage()}>OK</button>
         {/if}
+      {/if}
+      {#if stages.day}
+        <p>
+          A murder has been committed.
+          {lastPlayerKilled.name}
+          has been murdered in their sleep.
+        </p>
+        <p>The townfolk gather to find the criminals in their midst.</p>
 
-        {#if stages.day}
-          <p>
-            A murder has been committed.
-            {[deadPlayers][deadPlayers.length - 1].name}
-            has been murdered in their sleep.
-          </p>
-          <p>The townfolk gather to find the criminals in their midst.</p>
+        {#if playerToNominate.name}
+          <p>You nominated {playerToNominate.name}</p>
         {/if}
+      {/if}
+      {#if stages.twoNominations}
+        <p>
+          {nominatedPlayers.map(({ name }) => name).join(` and `)}
+          have been accused by the townsfolk. One of them must die. Pick one.
+        </p>
+        {#if confirmNomination}
+          <button on:click={handleNominatePlayer(playerToNominate)}>Nominate
+            {playerToNominate.name}</button>
+        {/if}
+      {/if}
+      {#if stages.playerLynched}
+        <p>{lastPlayerKilled.name} was murdered by the townfolk</p>
+        <p>{lastPlayerKilled.name} was a {lastPlayerKilled.role}</p>
       {/if}
     {/if}
   </div>

@@ -18,7 +18,7 @@ const getGameById = async (gameId: string): Promise<ILeanGamesDocument> =>
       },
     })
     .populate(`lastPlayerKilled`)
-    .populate(`nominatedPlayer`);
+    .populate(`nominatedPlayers`)
 
 const updateGame = async (gameId: string, operation: {}) =>
   GamesModel.findOneAndUpdate({ gameId }, operation, {
@@ -34,7 +34,7 @@ const updateGame = async (gameId: string, operation: {}) =>
       },
     })
     .populate(`lastPlayerKilled`)
-    .populate(`nominatedPlayer`);
+    .populate(`nominatedPlayers`);
 
 const getPlayerById = async (_id: Object, projection: string) =>
   PlayerModel.findById({ _id }, projection, { lean: true });
@@ -88,8 +88,13 @@ export const addPlayer = async (
 };
 
 export const listPlayersInGame = async (gameId: string): Promise<Player[]> => {
-  const { players } = await getGameById(gameId);
-  return players as Player[];
+  try {
+    const { players } = await getGameById(gameId);
+    return players as Player[];
+  } catch (err) {
+    console.error(`No game found`);
+    return null;
+  }
 };
 
 export const startGame = async (
@@ -105,20 +110,25 @@ export const startGame = async (
   });
 };
 
+const handlePlayerNomination = async (
+  playerToNominate: Player,
+  nominatedBy: Player,
+): Promise<void> => {
+  await updatePlayer(
+    { nominatedBy: nominatedBy._id },
+    { $pull: { nominatedBy: nominatedBy._id } },
+  );
+  await updatePlayerById(playerToNominate._id, {
+    $addToSet: { nominatedBy: nominatedBy._id },
+  });
+};
+
 export const assassinatePlayer = async (
   player: Player,
   mafiaHitman: Player,
   gameId: string,
 ): Promise<ILeanGamesDocument> => {
-  //remove mafiaHitman._id from previously nominated player's nominatedBy array
-  await updatePlayer(
-    { nominatedBy: mafiaHitman._id },
-    { $pull: { nominatedBy: mafiaHitman._id } },
-  );
-  //add mafiaHitman._id to nominated player's nominatedBy array
-  await updatePlayerById(player._id, {
-    $addToSet: { nominatedBy: mafiaHitman._id },
-  });
+  await handlePlayerNomination(player, mafiaHitman);
 
   const updatedGame = await getGameById(gameId);
 
@@ -131,10 +141,47 @@ export const assassinatePlayer = async (
     nominated[0].nominatedBy.length === mafia.length
   ) {
     return updateGame(gameId, {
-      nominatedPlayer: nominated[0],
+      nominatedPlayers: nominated,
     });
   }
   return updatedGame;
+};
+
+export const nominatePlayer = async (
+  playerToNominate: Player,
+  nominatedBy: Player,
+  gameId: string,
+): Promise<ILeanGamesDocument> => {
+  await handlePlayerNomination(playerToNominate, nominatedBy);
+  const updatedGame = await getGameById(gameId);
+  console.log('updated game with alive players', updatedGame);
+  const nominatedPlayers = (updatedGame.players as Player[]).filter(
+    ({ nominatedBy }) => nominatedBy.length,
+  );
+  const alive = (updatedGame.players as Player[]).filter(
+    ({ isAlive }) => isAlive,
+  );
+  //TODO: ACCOUNT FOR PLAYER NOMINATING THEMSELVES
+
+  if (
+    nominatedPlayers.length === 2 &&
+    nominatedPlayers.reduce(
+      (acc, { nominatedBy }) => [...acc, ...nominatedBy],
+      [],
+    ).length === alive.length
+  ) {
+    console.log('TWO NOMINATIONS');
+    await Promise.all(
+      (updatedGame.players as Player[]).map((player) =>
+        updatePlayerById(player._id, { nominatedBy: [] }),
+      ),
+    );
+    return updateGame(gameId, {
+      nominatedPlayers,
+      $set: { 'stages.day': false, 'stages.twoNominations': true },
+    });
+  }
+  return updateGame(gameId, { nominatedPlayers });
 };
 
 export const killPlayer = async (
@@ -143,15 +190,76 @@ export const killPlayer = async (
 ): Promise<ILeanGamesDocument> => {
   const lastPlayerKilled = await updatePlayerById(playerToDie._id, {
     isAlive: false,
+    nominatedBy: [],
   });
   return updateGame(gameId, {
     lastPlayerKilled,
-    nominatedPlayer: null,
+    nominatedPlayers: [],
     $set: {
       'stages.mafiaAwake': false,
       'stages.detectiveAwake': true,
     },
   });
+};
+
+export const lynchPlayer = async (
+  playerToLynch: Player,
+  nominatedBy: Player,
+  gameId: string,
+) => {
+  await handlePlayerNomination(playerToLynch, nominatedBy);
+  const updatedGame = await getGameById(gameId)
+  const nominatedPlayers = (updatedGame.players as Player[]).filter(
+    ({ nominatedBy }) => nominatedBy.length,
+  );
+
+  const alive = (updatedGame.players as Player[]).filter(
+    ({ isAlive }) => isAlive,
+  );
+
+
+  if (
+    nominatedPlayers.reduce(
+      (acc, { nominatedBy }) => [...acc, ...nominatedBy],
+      [],
+    ).length === alive.length
+  ) {
+    console.log('WE HAVE A CONSENSUS', nominatedPlayers);
+    if (
+      nominatedPlayers[0].nominatedBy.length ===
+      nominatedPlayers[1].nominatedBy.length
+    ) {
+      return updateGame(gameId, {
+        $set: { 'stages.twoNominations': false, 'stages.tie': true },
+      });
+    }
+    const lynchedPlayer =
+      nominatedPlayers[0].nominatedBy.length >
+      nominatedPlayers[1].nominatedBy.length
+        ? nominatedPlayers[0]
+        : nominatedPlayers[1];
+
+    await Promise.all(
+      (updatedGame.players as Player[]).map(({ _id }) =>
+        _id === lynchedPlayer._id
+          ? updatePlayerById(_id, {
+              isAlive: false,
+              nominatedBy: [],
+            })
+          : updatePlayerById(_id, { nominatedBy: [] }),
+      ),
+    );
+
+    return updateGame(gameId, {
+      lastPlayerKilled: lynchedPlayer,
+      $set: {
+        'stages.twoNominations': false,
+        'stages.tie': false,
+        'stages.playerLynched': true,
+      },
+    });
+  }
+  return updatedGame;
 };
 
 export const investigatePlayer = async (

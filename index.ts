@@ -157,6 +157,34 @@ io.on('connection', (socket: Socket) => {
   );
 
   socket.on(
+    `nominate`,
+    async (
+      playerToNominate: Player,
+      nominatedBy: Player,
+      gameId: string,
+    ): Promise<void> => {
+      const updatedGame = await gameService.nominatePlayer(
+        playerToNominate,
+        nominatedBy,
+        gameId,
+      );
+      io.to(gameId).emit(`postNomination`, updatedGame);
+    },
+  );
+
+  socket.on(
+    `lynch`,
+    async (playerToLynch: Player, nominatedBy: Player, gameId: string) => {
+      const updatedGame = await gameService.lynchPlayer(
+        playerToLynch,
+        nominatedBy,
+        gameId,
+      );
+      io.to(gameId).emit(`postLynching`, updatedGame)
+    },
+  );
+
+  socket.on(
     `disconnect`,
     async (): Promise<void> => {
       await gameService.disconnectPlayerFromGame(socket.id);

@@ -73,3 +73,7 @@ export const removePlayerFromGame = gameRepository.removePlayerFromGame;
 export const investigatePlayer = gameRepository.investigatePlayer
 
 export const endDetectiveTurn = gameRepository.endDetectiveTurn
+
+export const nominatePlayer = gameRepository.nominatePlayer
+
+export const lynchPlayer = gameRepository.lynchPlayer
