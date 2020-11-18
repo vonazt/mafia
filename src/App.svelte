@@ -1,8 +1,11 @@
 <script>
   import io from 'socket.io-client';
-  const socket = io();
-
   let thisPlayer = { name: `` };
+
+  const socket = io('http://localhost:5000', {
+    query: { player: localStorage?.getItem(`thisPlayer`) },
+  });
+
   let gameId;
 
   let joinId;
@@ -50,6 +53,7 @@
   const addPlayer = (e) => {
     e.preventDefault();
     console.log('adding player', thisPlayer);
+    localStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
     socket.emit(`add`, gameId, thisPlayer);
   };
 
@@ -58,8 +62,16 @@
     thisPlayer = playersResponse.find(
       (player) => thisPlayer.name === player.name,
     );
+    console.log('this plater is', thisPlayer)
+    localStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
     players = [...playersResponse];
   });
+
+  socket.on(`reconnected`, updatedPlayer => {
+    console.log('updted player', updatedPlayer)
+    thisPlayer = {...updatedPlayer}
+    localStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
+  })
 
   // $: console.log(
   //   'connected players',

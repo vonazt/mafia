@@ -27,6 +27,7 @@ export interface IPlayerHandler {
     nominatedBy: Player,
     gameId: string,
   ) => Promise<void>;
+  reconnect: (player: Player, socketId: string) => Promise<void>
   disconnect: () => Promise<void>;
 }
 
@@ -82,6 +83,7 @@ export default class PlayerHandler implements IPlayerHandler {
     detectivePlayer: Player,
   ): Promise<void> => {
     const isMafia: boolean = await this.playerService.investigate(playerToInvestigate);
+    console.log('broadcasting to', detectivePlayer.socketId)
     this.io
       .to(detectivePlayer.socketId)
       .emit(`investigationResult`, isMafia, playerToInvestigate);
@@ -112,6 +114,12 @@ export default class PlayerHandler implements IPlayerHandler {
     );
     this.io.to(gameId).emit(`postLynching`, updatedGame);
   };
+
+  public reconnect = async (player: Player, socketId: string) => {
+    const updatedPlayer: Player = await this.playerService.reconnect(player, socketId)
+    console.log('reconnected player to socket id', updatedPlayer.socketId)
+    this.io.to(updatedPlayer.socketId).emit(`reconnected`, updatedPlayer)
+  }
 
   public disconnect = async () => {
     await this.playerService.disconnectFromGame(this.socket.id);

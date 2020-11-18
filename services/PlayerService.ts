@@ -33,6 +33,7 @@ export interface IPlayerService {
     nominatedBy: Player,
     gameId: string,
   ) => Promise<LeanGameDocument>;
+  reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>
   disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
 
@@ -129,6 +130,7 @@ export default class PlayerService implements IPlayerService {
       playerToInvestigate._id,
       `role`,
     );
+    console.log('ROLE IS', role)
     return role === `mafia`;
   };
 
@@ -152,13 +154,8 @@ export default class PlayerService implements IPlayerService {
     );
     //TODO: ACCOUNT FOR PLAYER NOMINATING THEMSELVES
 
-    if (
-      nominatedPlayers.length === 2 &&
-      nominatedPlayers.reduce(
-        (acc: Player[], { nominatedBy }: Player) => [...acc, ...nominatedBy],
-        [],
-      ).length === alivePlayers.length
-    ) {
+    console.log('TWO PLAYERS NOMINTED', this.twoPlayersNominated(nominatedPlayers, alivePlayers))
+    if (this.twoPlayersNominated(nominatedPlayers, alivePlayers)) {
       await Promise.all(
         updatedGame.players.map((player: Player) =>
           this.playerRepository.updateById(player._id, { nominatedBy: [] }),
@@ -189,50 +186,55 @@ export default class PlayerService implements IPlayerService {
       updatedGame.players,
     );
 
-    if (
-      nominatedPlayers.reduce(
-        (acc: Player[], { nominatedBy }: Player) => [...acc, ...nominatedBy],
-        [],
-      ).length === alivePlayers.length
-    ) {
-      if (
-        nominatedPlayers[0].nominatedBy.length ===
-        nominatedPlayers[1].nominatedBy.length
-      ) {
-        return this.gameRepository.update(gameId, {
-          $set: { 'stages.twoNominations': false, 'stages.tie': true },
-        });
-      }
-      const lynchedPlayer: Player =
-        nominatedPlayers[0].nominatedBy.length >
-        nominatedPlayers[1].nominatedBy.length
-          ? nominatedPlayers[0]
-          : nominatedPlayers[1];
-
-      await Promise.all(
-        updatedGame.players.map(({ _id }: Player) =>
-          _id === lynchedPlayer._id
-            ? this.playerRepository.updateById(_id, {
-                isAlive: false,
-                nominatedBy: [],
-              })
-            : this.playerRepository.updateById(_id, { nominatedBy: [] }),
-        ),
-      );
-
-      return this.gameRepository.update(gameId, {
-        lastPlayerKilled: lynchedPlayer,
-        $set: {
-          'stages.twoNominations': false,
-          'stages.tie': false,
-          'stages.playerLynched': true,
-        },
-      });
+    if (this.allPlayersVoted(nominatedPlayers, alivePlayers)) {
+      return this.decideLynchedPlayer(nominatedPlayers, gameId, updatedGame);
     }
     return updatedGame;
   };
 
   public disconnectFromGame = this.playerRepository.disconnectFromGame;
+
+  public reconnect = this.playerRepository.reconnect
+
+  private decideLynchedPlayer = async (
+    nominatedPlayers: Player[],
+    gameId: string,
+    updatedGame: LeanGameDocument,
+  ): Promise<LeanGameDocument> => {
+    if (
+      nominatedPlayers[0].nominatedBy.length ===
+      nominatedPlayers[1].nominatedBy.length
+    ) {
+      return this.gameRepository.update(gameId, {
+        $set: { 'stages.twoNominations': false, 'stages.tie': true },
+      });
+    }
+    const lynchedPlayer: Player =
+      nominatedPlayers[0].nominatedBy.length >
+      nominatedPlayers[1].nominatedBy.length
+        ? nominatedPlayers[0]
+        : nominatedPlayers[1];
+
+    await Promise.all(
+      updatedGame.players.map(({ _id }: Player) =>
+        _id === lynchedPlayer._id
+          ? this.playerRepository.updateById(_id, {
+              isAlive: false,
+              nominatedBy: [],
+            })
+          : this.playerRepository.updateById(_id, { nominatedBy: [] }),
+      ),
+    );
+
+    return this.gameRepository.update(gameId, {
+      lastPlayerKilled: lynchedPlayer,
+      $set: {
+        'stages.twoNominations': false,
+        'stages.tie': false,
+        'stages.playerLynched': true,
+      },
+    });
+  };
 
   private getNominatedAndAliveAndMafiaPlayers = (
     players: Player[],
@@ -251,4 +253,23 @@ export default class PlayerService implements IPlayerService {
 
     return { nominatedPlayers, alivePlayers, mafiaPlayers };
   };
+
+  private twoPlayersNominated = (
+    nominatedPlayers: Player[],
+    alivePlayers: Player[],
+  ): boolean =>
+    nominatedPlayers.length === 2 &&
+    nominatedPlayers.reduce(
+      (acc: Player[], { nominatedBy }: Player) => [...acc, ...nominatedBy],
+      [],
+    ).length === alivePlayers.length;
+
+  private allPlayersVoted = (
+    nominatedPlayers: Player[],
+    alivePlayers: Player[],
+  ): boolean =>
+    nominatedPlayers.reduce(
+      (acc: Player[], { nominatedBy }: Player) => [...acc, ...nominatedBy],
+      [],
+    ).length === alivePlayers.length;
 }

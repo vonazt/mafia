@@ -12,7 +12,8 @@ export interface IPlayerRepository {
   updateNominations: (
     playerToNominate: Player,
     nominatedBy: Player,
-  ) => Promise<void>;
+  ) => Promise<LeanPlayerDocument[]>;
+  reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
   disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
 
@@ -35,6 +36,9 @@ export default class PlayerRepository implements IPlayerRepository {
       lean: true,
     });
 
+  public reconnect = async (player: Player, socketId: string): Promise<LeanPlayerDocument> =>
+    this.updatePlayer({ _id: player._id }, { socketId });
+
   public disconnectFromGame = async (
     socketId: string,
   ): Promise<LeanPlayerDocument> =>
@@ -43,15 +47,16 @@ export default class PlayerRepository implements IPlayerRepository {
   public updateNominations = async (
     playerToNominate: Player,
     nominatedBy: Player,
-  ): Promise<void> => {
-    await this.updatePlayer(
-      { nominatedBy: nominatedBy._id },
-      { $pull: { nominatedBy: nominatedBy._id } },
-    );
-    await this.updateById(playerToNominate._id, {
-      $addToSet: { nominatedBy: nominatedBy._id },
-    });
-  };
+  ): Promise<LeanPlayerDocument[]> =>
+    Promise.all([
+      this.updatePlayer(
+        { nominatedBy: nominatedBy._id },
+        { $pull: { nominatedBy: nominatedBy._id } },
+      ),
+      this.updateById(playerToNominate._id, {
+        $addToSet: { nominatedBy: nominatedBy._id },
+      }),
+    ]);
 
   private updatePlayer = async (
     filter: {},

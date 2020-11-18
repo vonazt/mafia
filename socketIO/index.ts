@@ -14,6 +14,12 @@ const sockets = (io: ioserver.Server) => async (
 
   const playerHandler: IPlayerHandler = PlayerHandlerFactory.build(io, socket);
 
+  const player = JSON.parse(socket.handshake.query.player);
+
+  if (player?._id && player?.socketId !== socket.id) {    
+    playerHandler.reconnect(player, socket.id)
+  }
+
   socket.on(`create`, gameHandler.create);
 
   socket.on(`join`, gameHandler.join);
