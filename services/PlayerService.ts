@@ -33,7 +33,7 @@ export interface IPlayerService {
     nominatedBy: Player,
     gameId: string,
   ) => Promise<LeanGameDocument>;
-  reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>
+  reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
   disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
 
@@ -65,10 +65,7 @@ export default class PlayerService implements IPlayerService {
         },
       });
     }
-    await this.playerRepository.updateById(playerAlreadyInGame._id, {
-      connected: true,
-      socketId,
-    });
+    await this.playerRepository.reconnect(playerAlreadyInGame, socketId);
 
     return this.gameRepository.getById(gameId);
   };
@@ -130,7 +127,7 @@ export default class PlayerService implements IPlayerService {
       playerToInvestigate._id,
       `role`,
     );
-    console.log('ROLE IS', role)
+    console.log('ROLE IS', role);
     return role === `mafia`;
   };
 
@@ -154,7 +151,10 @@ export default class PlayerService implements IPlayerService {
     );
     //TODO: ACCOUNT FOR PLAYER NOMINATING THEMSELVES
 
-    console.log('TWO PLAYERS NOMINTED', this.twoPlayersNominated(nominatedPlayers, alivePlayers))
+    console.log(
+      'TWO PLAYERS NOMINTED',
+      this.twoPlayersNominated(nominatedPlayers, alivePlayers),
+    );
     if (this.twoPlayersNominated(nominatedPlayers, alivePlayers)) {
       await Promise.all(
         updatedGame.players.map((player: Player) =>
@@ -194,7 +194,7 @@ export default class PlayerService implements IPlayerService {
 
   public disconnectFromGame = this.playerRepository.disconnectFromGame;
 
-  public reconnect = this.playerRepository.reconnect
+  public reconnect = this.playerRepository.reconnect;
 
   private decideLynchedPlayer = async (
     nominatedPlayers: Player[],

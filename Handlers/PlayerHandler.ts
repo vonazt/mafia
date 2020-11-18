@@ -117,7 +117,7 @@ export default class PlayerHandler implements IPlayerHandler {
 
   public reconnect = async (player: Player, socketId: string) => {
     const updatedPlayer: Player = await this.playerService.reconnect(player, socketId)
-    console.log('reconnected player to socket id', updatedPlayer.socketId)
+    console.log(`reconnected ${updatedPlayer.name} to socket id ${updatedPlayer.socketId}`)
     this.io.to(updatedPlayer.socketId).emit(`reconnected`, updatedPlayer)
   }
 

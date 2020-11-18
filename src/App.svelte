@@ -3,7 +3,7 @@
   let thisPlayer = { name: `` };
 
   const socket = io('http://localhost:5000', {
-    query: { player: localStorage?.getItem(`thisPlayer`) },
+    query: { player: sessionStorage?.getItem(`thisPlayer`) },
   });
 
   let gameId;
@@ -53,7 +53,7 @@
   const addPlayer = (e) => {
     e.preventDefault();
     console.log('adding player', thisPlayer);
-    localStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
+    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
     socket.emit(`add`, gameId, thisPlayer);
   };
 
@@ -63,14 +63,14 @@
       (player) => thisPlayer.name === player.name,
     );
     console.log('this plater is', thisPlayer)
-    localStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
+    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
     players = [...playersResponse];
   });
 
   socket.on(`reconnected`, updatedPlayer => {
     console.log('updted player', updatedPlayer)
     thisPlayer = {...updatedPlayer}
-    localStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
+    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
   })
 
   // $: console.log(
