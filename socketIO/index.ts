@@ -36,7 +36,7 @@ const sockets = (io: ioserver.Server) => async (
 
   socket.on(`disconnect`, playerHandler.disconnect);
 
-  socket.on(`quit`, playerHandler.quit);
+  socket.on(`quit`, gameHandler.quit);
 
   next();
 };

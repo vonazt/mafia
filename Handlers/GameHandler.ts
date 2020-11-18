@@ -11,6 +11,7 @@ export interface IGameHandler {
   join: (gameId: string) => Promise<void>;
   start: (gameId: string) => Promise<void>;
   endDetectiveTurn: (gameId: string) => Promise<void>;
+  quit: () => Promise<void>;
 }
 
 export default class GameHandler implements IGameHandler {
@@ -65,6 +66,11 @@ export default class GameHandler implements IGameHandler {
         .emit(`guardianAngelAwake`, updatedGame.stages);
       return;
     } else this.io.to(gameId).emit(`day`, updatedGame);
+  };
+
+  public quit = async () => {
+    await this.gameService.quit(this.socket.id);
+    return;
   };
 
   private broadcastToMafia = (players: Player[], player: Player): void => {

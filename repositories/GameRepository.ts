@@ -3,7 +3,6 @@ import { Model } from 'mongoose';
 import {
   IGameDocument,
   LeanGameDocument,
-  Stages,
 } from '../DomainObjects/Mongoose/GameDocuments';
 
 export interface IGameRepository {

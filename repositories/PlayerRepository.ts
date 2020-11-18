@@ -1,8 +1,4 @@
 import {
-  IGameDocument,
-  LeanGameDocument,
-} from '../DomainObjects/Mongoose/GameDocuments';
-import {
   IPlayerDocument,
   LeanPlayerDocument,
 } from '../DomainObjects/Mongoose/PlayerDocuments';
@@ -21,9 +17,7 @@ export interface IPlayerRepository {
 }
 
 export default class PlayerRepository implements IPlayerRepository {
-  constructor(
-    public PlayerModel: Model<IPlayerDocument>,
-  ) {}
+  constructor(public PlayerModel: Model<IPlayerDocument>) {}
 
   public create = async (player: Player): Promise<IPlayerDocument> => {
     const playerToSave: IPlayerDocument = new this.PlayerModel(player);

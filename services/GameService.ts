@@ -12,6 +12,7 @@ export interface IGameService {
   join: (gameId: string) => Promise<Player[]>;
   start: (gameId: string) => Promise<LeanGameDocument>;
   endDetectiveTurn: (gameId: string) => Promise<LeanGameDocument>;
+  quit: (socketId: string) => Promise<LeanGameDocument>;
 }
 
 export default class GameService implements IGameService {

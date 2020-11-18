@@ -28,7 +28,6 @@ export interface IPlayerHandler {
     gameId: string,
   ) => Promise<void>;
   disconnect: () => Promise<void>;
-  quit: () => Promise<void>;
 }
 
 export default class PlayerHandler implements IPlayerHandler {
@@ -116,11 +115,6 @@ export default class PlayerHandler implements IPlayerHandler {
 
   public disconnect = async () => {
     await this.playerService.disconnectFromGame(this.socket.id);
-    return;
-  };
-
-  public quit = async () => {
-    await this.playerService.quit(this.socket.id);
     return;
   };
 }
