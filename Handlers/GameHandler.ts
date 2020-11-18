@@ -1,14 +1,16 @@
-// import { Player } from '../repositories/mongoose';
-import { IGameDocument, LeanGameDocument } from '../DomainObjects/Mongoose/GameDocuments';
-import ioserver, { Socket, Server } from 'socket.io';
-import { IGameService } from '../services/GameService';
+import {
+  IGameDocument,
+  LeanGameDocument,
+} from '../DomainObjects/Mongoose/GameDocuments';
+import { Socket, Server } from 'socket.io';
+import { IGameService } from '../Services/GameService';
 import { Player } from '../DomainObjects/Player';
 
 export interface IGameHandler {
   create: () => Promise<void>;
   join: (gameId: string) => Promise<void>;
   start: (gameId: string) => Promise<void>;
-  // endDetectiveTurn: (gameId: string) => Promise<void>;
+  endDetectiveTurn: (gameId: string) => Promise<void>;
 }
 
 export default class GameHandler implements IGameHandler {
@@ -34,10 +36,12 @@ export default class GameHandler implements IGameHandler {
   };
 
   public start = async (gameId: string): Promise<void> => {
-    const { players, stages }: LeanGameDocument = await this.gameService.start(gameId);
+    const { players, stages }: LeanGameDocument = await this.gameService.start(
+      gameId,
+    );
 
     await Promise.all(
-      players.map((player) => {
+      players.map((player: Player) => {
         if (player.role === `mafia`) {
           this.broadcastToMafia(players, player);
         }
@@ -47,21 +51,23 @@ export default class GameHandler implements IGameHandler {
     this.io.to(gameId).emit(`gameStarted`, stages);
   };
 
-  // public endDetectiveTurn = async (gameId: string) => {
-  //   const updatedGame = await gameService.endDetectiveTurn(gameId);
+  public endDetectiveTurn = async (gameId: string): Promise<void> => {
+    const updatedGame: LeanGameDocument = await this.gameService.endDetectiveTurn(
+      gameId,
+    );
 
-  //   if (updatedGame.stages.guardianAngelAwake) {
-  //     const guardianAngelPlayer = updatedGame.players.find(
-  //       ({ role }) => role === `guardianAngel`,
-  //     );
-  //     this.io
-  //       .to(guardianAngelPlayer.socketId)
-  //       .emit(`guardianAngelAwake`, updatedGame.stages);
-  //     return;
-  //   } else this.io.to(gameId).emit(`day`, updatedGame);
-  // };
+    if (updatedGame.stages.guardianAngelAwake) {
+      const guardianAngelPlayer = updatedGame.players.find(
+        ({ role }: Player) => role === `guardianAngel`,
+      );
+      this.io
+        .to(guardianAngelPlayer.socketId)
+        .emit(`guardianAngelAwake`, updatedGame.stages);
+      return;
+    } else this.io.to(gameId).emit(`day`, updatedGame);
+  };
 
-  private broadcastToMafia = (players: Player[], player: Player) => {
+  private broadcastToMafia = (players: Player[], player: Player): void => {
     const otherMafia: string[] = this.getOtherMafia(players, player);
     this.io.to(player.socketId).emit(`assignedRoles`, player.role, otherMafia);
   };
@@ -69,8 +75,8 @@ export default class GameHandler implements IGameHandler {
   private getOtherMafia = (players: Player[], player: Player): string[] =>
     players
       .filter(
-        ({ socketId, role }) =>
+        ({ socketId, role }: Player) =>
           socketId !== player.socketId && role === `mafia`,
       )
-      .map(({ name }) => name);
+      .map(({ name }: Player) => name);
 }

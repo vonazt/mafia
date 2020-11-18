@@ -119,9 +119,9 @@
     }
   });
 
-  const handleConfirmKill = () => {
+  const handleConfirmAssassination = () => {
     console.log(`confirmed that ${playerToDie.name} will be killed`);
-    socket.emit(`confirmKill`, playerToDie, gameId);
+    socket.emit(`confirmAssassination`, playerToDie, gameId);
   };
 
   const getNominatedBy = (nominatedBy) => {
@@ -309,7 +309,7 @@
       {/if}
       {#if playerToDie && stages.mafiaAwake}
         <p>{playerToDie.name} will be sent to sleep with the fishes</p>
-        <button on:click={handleConfirmKill}>Confirm</button>
+        <button on:click={handleConfirmAssassination}>Confirm</button>
       {/if}
       {#if stages.detectiveAwake}
         <p>A murder has been committed this night.</p>

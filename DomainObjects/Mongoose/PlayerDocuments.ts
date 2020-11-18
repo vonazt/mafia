@@ -10,3 +10,9 @@ export interface IPlayerDocument extends Document {
   nominatedBy?: Player[];
   connected?: boolean;
 }
+
+
+export type LeanPlayerDocument = Pick<
+  IPlayerDocument,
+  '_id' | 'socketId' | 'name' | 'role' | 'isAlive' | 'nominatedBy' | 'connected'
+>;

@@ -1,8 +1,8 @@
 import ioserver, { Socket } from 'socket.io';
 import { IGameHandler } from '../Handlers/GameHandler';
 import GameHandlerFactory from '../Factories/GameHandlerFactory';
-import PlayerHandler from './PlayerHandler';
-import { Player } from '../DomainObjects/Player';
+import { IPlayerHandler } from '../Handlers/PlayerHandler';
+import PlayerHandlerFactory from '../Factories/PlayerHandlerFactory';
 
 const sockets = (io: ioserver.Server) => async (
   socket: Socket,
@@ -12,70 +12,31 @@ const sockets = (io: ioserver.Server) => async (
 
   const gameHandler: IGameHandler = GameHandlerFactory.build(io, socket);
 
-  const playerHandler: IPlayerHandler = new PlayerHandler(io, socket);
+  const playerHandler: IPlayerHandler = PlayerHandlerFactory.build(io, socket);
 
-  socket.on(`create`, async (): Promise<void> => gameHandler.create());
+  socket.on(`create`, gameHandler.create);
 
-  socket.on(
-    `join`,
-    async (gameId: string): Promise<void> => gameHandler.join(gameId),
-  );
+  socket.on(`join`, gameHandler.join);
 
-  socket.on(`add`, async (gameId: string, player: Player) =>
-    playerHandler.add(gameId, player),
-  );
+  socket.on(`add`, playerHandler.add);
 
-  // socket.on(`start`, async (gameId: string) => gameHandler.start(gameId));
+  socket.on(`start`, gameHandler.start);
 
-  // socket.on(
-  //   `assassinate`,
-  //   async (player: Player, mafiaHitman: Player, gameId: string) =>
-  //     playerHandler.assassinate(player, mafiaHitman, gameId),
-  // );
+  socket.on(`assassinate`, playerHandler.assassinate);
 
-  // socket.on(
-  //   `confirmKill`,
-  //   async (playerToDie: Player, gameId: string): Promise<void> =>
-  //     playerHandler.confirmKill(playerToDie, gameId),
-  // );
+  socket.on(`confirmAssassination`, playerHandler.confirmAssassination);
 
-  // socket.on(
-  //   `investigate`,
-  //   async (
-  //     playerToInvestigate: Player,
-  //     detectivePlayer: Player,
-  //   ): Promise<void> =>
-  //     playerHandler.investigate(playerToInvestigate, detectivePlayer),
-  // );
+  socket.on(`investigate`, playerHandler.investigate);
 
-  // socket.on(
-  //   `endDetectiveTurn`,
-  //   async (gameId: string): Promise<void> =>
-  //     gameHandler.endDetectiveTurn(gameId),
-  // );
+  socket.on(`endDetectiveTurn`, gameHandler.endDetectiveTurn);
 
-  // socket.on(
-  //   `nominate`,
-  //   async (
-  //     playerToNominate: Player,
-  //     nominatedBy: Player,
-  //     gameId: string,
-  //   ): Promise<void> =>
-  //     playerHandler.nominate(playerToNominate, nominatedBy, gameId),
-  // );
+  socket.on(`nominate`, playerHandler.nominate);
 
-  // socket.on(
-  //   `lynch`,
-  //   async (playerToLynch: Player, nominatedBy: Player, gameId: string) =>
-  //     playerHandler.lynch(playerToLynch, nominatedBy, gameId),
-  // );
+  socket.on(`lynch`, playerHandler.lynch);
 
-  // socket.on(
-  //   `disconnect`,
-  //   async (): Promise<void> => playerHandler.disconnect(),
-  // );
+  socket.on(`disconnect`, playerHandler.disconnect);
 
-  // socket.on(`quit`, async (): Promise<void> => playerHandler.quit());
+  socket.on(`quit`, playerHandler.quit);
 
   next();
 };
