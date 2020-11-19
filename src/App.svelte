@@ -1,10 +1,9 @@
 <script>
   import io from 'socket.io-client';
+  import axios from 'axios';
   let thisPlayer = { name: `` };
 
-  const socket = io('http://localhost:5000', {
-    query: { player: sessionStorage?.getItem(`thisPlayer`) },
-  });
+  const socket = io('http://localhost:5000');
 
   let gameId;
 
@@ -24,37 +23,27 @@
 
   $: console.log('stages are', stages);
 
-  const handleCreate = () => {
-    socket.emit(`create`);
-  };
-
-  socket.on(`createSuccess`, (game) => {
-    console.log('new game is', game);
+  const handleCreate = async () => {
+    const { data: game } = await axios.post(`/api/create`);
     gameId = game.gameId;
     stages = { ...game.stages };
-  });
-
-  socket.on(`joinSuccess`, (joinedGameId, playersResponse) => {
-    players = [...playersResponse];
-    gameId = joinedGameId;
-  });
-
-  socket.on(`noGame`, () => {
-    gameError = `Game not found`;
-  });
-
-  const handleJoin = () => {
-    console.log('joining', joinId);
-    socket.emit(`join`, joinId);
   };
 
-  // console.log('game is id', gameId);
+  const handleJoin = async () => {
+    console.log('joining', joinId);
+    const { data: game } = await axios.post(`/api/join`, { gameId: joinId });
+    console.log('game after join is', game);
+    if (!game) {
+      return (gameError = `Game not found`);
+    }
+    players = [...game.players];
+    gameId = game.gameId;
+  };
 
   const addPlayer = (e) => {
     e.preventDefault();
-    console.log('adding player', thisPlayer);
-    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
-    socket.emit(`add`, gameId, thisPlayer);
+    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer));
+    axios.put(`/api/${gameId}/players`, { player: thisPlayer });
   };
 
   socket.on(`addedPlayer`, (playersResponse) => {
@@ -62,16 +51,16 @@
     thisPlayer = playersResponse.find(
       (player) => thisPlayer.name === player.name,
     );
-    console.log('this plater is', thisPlayer)
-    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
+    console.log('this plater is', thisPlayer);
+    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer));
     players = [...playersResponse];
   });
 
-  socket.on(`reconnected`, updatedPlayer => {
-    console.log('updted player', updatedPlayer)
-    thisPlayer = {...updatedPlayer}
-    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
-  })
+  socket.on(`reconnected`, (updatedPlayer) => {
+    console.log('updted player', updatedPlayer);
+    thisPlayer = { ...updatedPlayer };
+    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer));
+  });
 
   // $: console.log(
   //   'connected players',

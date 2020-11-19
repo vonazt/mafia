@@ -4,9 +4,10 @@ import { IGameService } from '../Services/GameService';
 import { LeanPlayerDocument } from '../DomainObjects/Mongoose/PlayerDocuments';
 import { IPlayerService } from '../Services/PlayerService';
 import { LeanGameDocument } from '../DomainObjects/Mongoose/GameDocuments';
+import { Request, Response } from 'express';
 
 export interface IPlayerHandler {
-  add: (gameId: string, player: Player) => Promise<void>;
+  add: (req: Request, res: Response, next: Function) => Promise<void>;
   assassinate: (
     player: Player,
     mafiaHitman: Player,
@@ -27,7 +28,7 @@ export interface IPlayerHandler {
     nominatedBy: Player,
     gameId: string,
   ) => Promise<void>;
-  reconnect: (player: Player, socketId: string) => Promise<void>
+  reconnect: (player: Player, socketId: string) => Promise<void>;
   disconnect: () => Promise<void>;
 }
 
@@ -38,13 +39,18 @@ export default class PlayerHandler implements IPlayerHandler {
     private playerService: IPlayerService,
   ) {}
 
-  public add = async (gameId: string, player: Player): Promise<void> => {
+  public add = async (req: Request, res: Response): Promise<void> => {
+    // console.log('req is', req.params);
+    const { gameId } = req.params;
+    const { player } = req.body;
     const { players }: LeanGameDocument = await this.playerService.add(
       gameId,
       player,
       this.socket.id,
     );
-    this.io.to(gameId).emit(`addedPlayer`, players);
+    // console.log('game id is', gameId)
+    this.socket.to(gameId).emit(`addedPlayer`, players);
+    res.sendStatus(200)
   };
 
   public assassinate = async (
@@ -82,8 +88,10 @@ export default class PlayerHandler implements IPlayerHandler {
     playerToInvestigate: Player,
     detectivePlayer: Player,
   ): Promise<void> => {
-    const isMafia: boolean = await this.playerService.investigate(playerToInvestigate);
-    console.log('broadcasting to', detectivePlayer.socketId)
+    const isMafia: boolean = await this.playerService.investigate(
+      playerToInvestigate,
+    );
+    console.log('broadcasting to', detectivePlayer.socketId);
     this.io
       .to(detectivePlayer.socketId)
       .emit(`investigationResult`, isMafia, playerToInvestigate);
@@ -116,10 +124,15 @@ export default class PlayerHandler implements IPlayerHandler {
   };
 
   public reconnect = async (player: Player, socketId: string) => {
-    const updatedPlayer: Player = await this.playerService.reconnect(player, socketId)
-    console.log(`reconnected ${updatedPlayer.name} to socket id ${updatedPlayer.socketId}`)
-    this.io.to(updatedPlayer.socketId).emit(`reconnected`, updatedPlayer)
-  }
+    const updatedPlayer: Player = await this.playerService.reconnect(
+      player,
+      socketId,
+    );
+    console.log(
+      `reconnected ${updatedPlayer.name} to socket id ${updatedPlayer.socketId}`,
+    );
+    this.io.to(updatedPlayer.socketId).emit(`reconnected`, updatedPlayer);
+  };
 
   public disconnect = async () => {
     await this.playerService.disconnectFromGame(this.socket.id);

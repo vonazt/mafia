@@ -5,10 +5,11 @@ import {
 import { Socket, Server } from 'socket.io';
 import { IGameService } from '../Services/GameService';
 import { Player } from '../DomainObjects/Player';
+import { Request, Response } from 'express';
 
 export interface IGameHandler {
-  create: () => Promise<void>;
-  join: (gameId: string) => Promise<void>;
+  create: (req: Request, res: Response) => Promise<void>;
+  join: (req: Request, res: Response) => Promise<void>;
   start: (gameId: string) => Promise<void>;
   endDetectiveTurn: (gameId: string) => Promise<void>;
   quit: () => Promise<void>;
@@ -20,20 +21,18 @@ export default class GameHandler implements IGameHandler {
     private socket: Socket,
     private gameService: IGameService,
   ) {}
-  public create = async (): Promise<void> => {
+  public create = async (req: Request, res: Response): Promise<void> => {
     const game: IGameDocument = await this.gameService.create();
     this.socket.join(game.gameId);
-    this.io.to(game.gameId).emit(`createSuccess`, game);
+    res.send(game);
   };
 
-  public join = async (gameId: string): Promise<void> => {
-    const players: Player[] = await this.gameService.join(gameId);
-    if (!players) {
-      this.socket.join(gameId);
-      this.io.to(gameId).emit(`noGame`);
-    }
-    this.socket.join(gameId);
-    this.io.to(gameId).emit(`joinSuccess`, gameId, players);
+  public join = async (req: Request, res: Response): Promise<void> => {
+    const { gameId } = req.body;
+    const game: LeanGameDocument = await this.gameService.join(gameId);
+    // console.log('game is', game)
+    this.socket.join(game?.gameId);
+    res.status(200).send(game);
   };
 
   public start = async (gameId: string): Promise<void> => {

@@ -9,7 +9,7 @@ export interface IGameRepository {
   getById: (gameId: string) => Promise<LeanGameDocument>;
   create: () => Promise<IGameDocument>;
   update: (gameId: string, operation: {}) => Promise<LeanGameDocument>;
-  join: (gameId: string) => Promise<Player[]>;
+  join: (gameId: string) => Promise<LeanGameDocument>;
   listPlayersInGame: (gameId: string) => Promise<Player[]>;
   quit: (socketId: string) => Promise<LeanGameDocument>;
 }
@@ -56,10 +56,10 @@ export default class GameRepository implements IGameRepository {
       .populate(`lastPlayerKilled`)
       .populate(`nominatedPlayers`);
 
-  public join = async (gameId: string): Promise<Player[]> => {
+  public join = async (gameId: string): Promise<LeanGameDocument> => {
     try {
-      const { players }: LeanGameDocument = await this.getById(gameId);
-      return players;
+      const game: LeanGameDocument = await this.getById(gameId);
+      return game;
     } catch (err) {
       console.error(`No game found`);
       return null;
