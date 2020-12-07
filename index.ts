@@ -7,9 +7,7 @@ import connectToMongo from './mongo';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import GameResolvers from './graphql/GameResolvers';
-import GameService from './Services/GameService';
-import GameRepository, { IGameRepository } from './Repositories/GameRepository';
-import GamesModel from './Mongoose/GameModel';
+import GameHandlerFactory from './Factories/GameHandlerFactory';
 
 const init = async () => {
   dotenv.config();
@@ -18,10 +16,7 @@ const init = async () => {
 
   const app = express();
 
-  const gameRepository = new GameRepository(GamesModel);
-
-  Container.set({ id: "GAME_SERVICE", factory: () => new GameService(gameRepository) });
-  Container.set({ id: "GAME_REPOSITORY", value: GameRepository });
+  Container.set({ id: "GAME_SERVICE", factory: () => GameHandlerFactory.build() });
   
   const schema = await buildSchema({
     resolvers: [GameResolvers],
