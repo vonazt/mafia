@@ -1,0 +1,1 @@
+<div class="container h-screen mx-auto flex flex-wrap justify-center content-center"><slot></slot></div>

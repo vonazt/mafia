@@ -6,7 +6,7 @@ import path from 'path';
 import connectToMongo from './mongo';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
-import GameResolvers from './graphql/GameResolvers';
+import { gameResolvers } from './graphql/';
 import GameHandlerFactory from './Factories/GameHandlerFactory';
 
 const init = async () => {
@@ -16,10 +16,13 @@ const init = async () => {
 
   const app = express();
 
-  Container.set({ id: "GAME_SERVICE", factory: () => GameHandlerFactory.build() });
-  
+  Container.set({
+    id: 'GAME_SERVICE',
+    factory: () => GameHandlerFactory.build(),
+  });
+
   const schema = await buildSchema({
-    resolvers: [GameResolvers],
+    resolvers: [gameResolvers],
     container: Container,
   });
 

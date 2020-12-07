@@ -10,3 +10,14 @@ export const CREATE_GAME = gql`
     }
   }
 `;
+
+export const GAME_SUBSCRIPTION = gql`
+  subscription OnGameUpdated($gameId: String!) {
+    updatedGame(gameId: $gameId) {
+      gameId
+      players {
+        name
+      }
+    }
+  }
+`;

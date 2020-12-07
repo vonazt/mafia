@@ -1,19 +1,24 @@
 <script>
   import client from './gql/client';
-  import { setClient, mutation } from 'svelte-apollo';
-  import { CREATE_GAME } from './gql';
+  import { setClient, subscribe } from 'svelte-apollo';
+  import gameStore from './stores/game';
+  import CreateGame from './components/CreateGame.svelte';
+  import Container from './components/common/Container.svelte';
+  import { GAME_SUBSCRIPTION } from './gql';
   setClient(client);
 
-  const createGame = mutation(CREATE_GAME);
-  const handleCreate = async () => {
-    const game = await createGame();
-    console.log('GAME IS ', game);
-  };
+  $: if ($gameStore.gameId) {
+    const subscription = subscribe(GAME_SUBSCRIPTION, {
+      variables: { gameId: $gameStore.gameId },
+    });
+    console.log('subscription is', subscription)
+  }
 </script>
 
-
 <main>
-  <div class="container mx-auto bg-gray-100 h-full">
-    <p class="text-green-500">here</p>
-  </div>
+  <Container>
+    {#if !$gameStore.gameId}
+      <CreateGame />
+    {:else}{$gameStore.gameId}{/if}
+  </Container>
 </main>

@@ -9,7 +9,7 @@ import { IPlayerRepository } from '../Repositories/PlayerRepository';
 
 export interface IGameService {
   create: () => Promise<IGameDocument>;
-  join: (gameId: string) => Promise<Player[]>;
+  join: (gameId: string) => Promise<LeanGameDocument>;
   start: (gameId: string) => Promise<LeanGameDocument>;
   endDetectiveTurn: (gameId: string) => Promise<LeanGameDocument>;
   quit: (socketId: string) => Promise<LeanGameDocument>;

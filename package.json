@@ -6,10 +6,10 @@
     "build:tailwind": "NODE_ENV=production postcss public/tailwind.css -o public/index.css",
     "dev": "run-p start:dev autobuild watch:tailwind",
     "build": "npm run build:tailwind && rollup -c",
-    "start": "sirv public --single",
+    "start:client": "sirv public --single",
     "start:dev": "sirv public --single --dev",
     "autobuild": "rollup -c -w",
-    "start:all": "rollup -c && ts-node-dev --respawn --transpile-only index.ts",
+    "start": "rollup -c && ts-node-dev --respawn --transpile-only index.ts",
     "seed": "node db/seeds.ts"
   },
   "devDependencies": {
@@ -60,6 +60,7 @@
     "sirv-cli": "^1.0.0",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.1",
+    "subscriptions-transport-ws": "^0.9.18",
     "svelte-apollo": "^0.4.0",
     "type-graphql": "^1.1.1",
     "typedi": "^0.8.0",
