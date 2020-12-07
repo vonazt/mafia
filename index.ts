@@ -2,23 +2,28 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
-import ioserver from 'socket.io';
+import { ApolloServer } from 'apollo-server-express';
+import { buildSchema } from 'type-graphql';
 import connectToMongo from './mongo';
-import sockets from './socketIO';
+
+import PlayerSchema from './graphql'
+import PlayerResolver from './graphql/PlayerResolver'
 
 dotenv.config();
 
-connectToMongo();
+await connectToMongo();
 
 const app = express();
 
-const server = require('http').Server(app);
+const PlayerScheme = PlayerSchema()
 
-const io = ioserver(server);
+const schema = await buildSchema({ resolvers: [PlayerResolver] });
 
-io.listen(server);
+const server = new ApolloServer({
+  schema,
+});
 
-io.use(sockets(io));
+server.applyMiddleware({ app, path: '/graphql' });
 
 app.use(cors());
 
@@ -27,6 +32,8 @@ app.get('*', (req: Request, res: Response) => {
   res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
 });
 
-server.listen(process.env.PORT, () => {
-  console.log(`Server is up at port ${process.env.PORT}`);
+app.listen({ port: process.env.PORT }, () => {
+  console.log(
+    `Server listening on ${process.env.PORT}\nApollo Server listening on ${process.env.PORT}/graphql`,
+  );
 });

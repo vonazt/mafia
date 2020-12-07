@@ -33,8 +33,6 @@ export interface IPlayerHandler {
 
 export default class PlayerHandler implements IPlayerHandler {
   constructor(
-    private io: Server,
-    private socket: Socket,
     private playerService: IPlayerService,
   ) {}
 

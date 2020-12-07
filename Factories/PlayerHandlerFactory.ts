@@ -9,11 +9,11 @@ import PlayerModel from '../Mongoose/PlayerModel';
 import GameRepository, { IGameRepository } from '../Repositories/GameRepository';
 
 export default class PlayerHandlerFactory {
-  public static build = (io: Server, socket: Socket): IPlayerHandler => {
+  public static build = (): IPlayerHandler => {
     const gameRepository: IGameRepository = new GameRepository(GameModel);
     const playerRepository: IPlayerRepository = new PlayerRepository(PlayerModel);
     const playerService: IPlayerService = new PlayerService(playerRepository, gameRepository);
 
-    return new PlayerHandler(io, socket, playerService);
+    return new PlayerHandler(playerService);
   };
 }

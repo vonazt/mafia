@@ -2,9 +2,7 @@
   import io from 'socket.io-client';
   let thisPlayer = { name: `` };
 
-  const socket = io('http://localhost:5000', {
-    query: { player: sessionStorage?.getItem(`thisPlayer`) },
-  });
+  const socket = io();
 
   let gameId;
 
