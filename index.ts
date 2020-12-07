@@ -1,32 +1,49 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { Container } from 'typedi';
 import path from 'path';
-import ioserver from 'socket.io';
 import connectToMongo from './mongo';
-import sockets from './socketIO';
+import { ApolloServer } from 'apollo-server-express';
+import { buildSchema } from 'type-graphql';
+import GameResolvers from './graphql/GameResolvers';
+import GameService from './Services/GameService';
+import GameRepository, { IGameRepository } from './Repositories/GameRepository';
+import GamesModel from './Mongoose/GameModel';
 
-dotenv.config();
+const init = async () => {
+  dotenv.config();
 
-connectToMongo();
+  await connectToMongo();
 
-const app = express();
+  const app = express();
 
-const server = require('http').Server(app);
+  const gameRepository = new GameRepository(GamesModel);
 
-const io = ioserver(server);
+  Container.set({ id: "GAME_SERVICE", factory: () => new GameService(gameRepository) });
+  Container.set({ id: "GAME_REPOSITORY", value: GameRepository });
+  
+  const schema = await buildSchema({
+    resolvers: [GameResolvers],
+    container: Container,
+  });
 
-io.listen(server);
+  const server = new ApolloServer({
+    schema,
+  });
 
-io.use(sockets(io));
+  server.applyMiddleware({ app, path: '/graphql' });
 
-app.use(cors());
+  app.use(cors());
 
-app.use(express.static('public'));
-app.get('*', (req: Request, res: Response) => {
-  res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
-});
+  app.use(express.static('public'));
+  app.get('*', (req: Request, res: Response) => {
+    res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
+  });
 
-server.listen(process.env.PORT, () => {
-  console.log(`Server is up at port ${process.env.PORT}`);
-});
+  app.listen(process.env.PORT, () => {
+    console.log(`Server is up at port ${process.env.PORT}`);
+  });
+};
+
+init();

@@ -1,3 +1,4 @@
+import { Service, Inject } from 'typedi';
 import { LeanPlayerDocument } from '../DomainObjects/Mongoose/PlayerDocuments';
 import { LeanGameDocument } from '../DomainObjects/Mongoose/GameDocuments';
 import {
@@ -36,9 +37,10 @@ export interface IPlayerService {
   reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
   disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
-
+@Service()
 export default class PlayerService implements IPlayerService {
   constructor(
+    @Inject(`PLAYER_SERVICE`)
     private playerRepository: IPlayerRepository,
     private gameRepository: IGameRepository,
   ) {}

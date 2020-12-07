@@ -4,6 +4,7 @@ import {
   IGameDocument,
   LeanGameDocument,
 } from '../DomainObjects/Mongoose/GameDocuments';
+import { Service } from 'typedi';
 
 export interface IGameRepository {
   getById: (gameId: string) => Promise<LeanGameDocument>;
@@ -14,6 +15,7 @@ export interface IGameRepository {
   quit: (socketId: string) => Promise<LeanGameDocument>;
 }
 
+@Service()
 export default class GameRepository implements IGameRepository {
   constructor(public GameModel: Model<IGameDocument>) {}
 
