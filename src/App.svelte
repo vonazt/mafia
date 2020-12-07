@@ -1,10 +1,11 @@
 <script>
-  import io from 'socket.io-client';
-  let thisPlayer = { name: `` };
+  import client from './gql/client';
+  import { setClient, mutation } from 'svelte-apollo';
+  import { CREATE_GAME } from './gql';
+  setClient(client);
 
-  const socket = io('http://localhost:5000', {
-    query: { player: sessionStorage?.getItem(`thisPlayer`) },
-  });
+  const createGame = mutation(CREATE_GAME);
+  let thisPlayer = { name: `` };
 
   let gameId;
 
@@ -24,206 +25,207 @@
 
   $: console.log('stages are', stages);
 
-  const handleCreate = () => {
-    socket.emit(`create`);
+  const handleCreate = async () => {
+   const game = await createGame()
+   console.log('GAME IS ', game)
   };
 
-  socket.on(`createSuccess`, (game) => {
-    console.log('new game is', game);
-    gameId = game.gameId;
-    stages = { ...game.stages };
-  });
+  // socket.on(`createSuccess`, (game) => {
+  //   console.log('new game is', game);
+  //   gameId = game.gameId;
+  //   stages = { ...game.stages };
+  // });
 
-  socket.on(`joinSuccess`, (joinedGameId, playersResponse) => {
-    players = [...playersResponse];
-    gameId = joinedGameId;
-  });
+  // socket.on(`joinSuccess`, (joinedGameId, playersResponse) => {
+  //   players = [...playersResponse];
+  //   gameId = joinedGameId;
+  // });
 
-  socket.on(`noGame`, () => {
-    gameError = `Game not found`;
-  });
+  // socket.on(`noGame`, () => {
+  //   gameError = `Game not found`;
+  // });
 
-  const handleJoin = () => {
-    console.log('joining', joinId);
-    socket.emit(`join`, joinId);
-  };
+  // const handleJoin = () => {
+  //   console.log('joining', joinId);
+  //   socket.emit(`join`, joinId);
+  // };
 
-  // console.log('game is id', gameId);
+  // // console.log('game is id', gameId);
 
-  const addPlayer = (e) => {
-    e.preventDefault();
-    console.log('adding player', thisPlayer);
-    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
-    socket.emit(`add`, gameId, thisPlayer);
-  };
+  // const addPlayer = (e) => {
+  //   e.preventDefault();
+  //   console.log('adding player', thisPlayer);
+  //   sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer));
+  //   socket.emit(`add`, gameId, thisPlayer);
+  // };
 
-  socket.on(`addedPlayer`, (playersResponse) => {
-    console.log('players response', playersResponse);
-    thisPlayer = playersResponse.find(
-      (player) => thisPlayer.name === player.name,
-    );
-    console.log('this plater is', thisPlayer)
-    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
-    players = [...playersResponse];
-  });
+  // socket.on(`addedPlayer`, (playersResponse) => {
+  //   console.log('players response', playersResponse);
+  //   thisPlayer = playersResponse.find(
+  //     (player) => thisPlayer.name === player.name,
+  //   );
+  //   console.log('this plater is', thisPlayer);
+  //   sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer));
+  //   players = [...playersResponse];
+  // });
 
-  socket.on(`reconnected`, updatedPlayer => {
-    console.log('updted player', updatedPlayer)
-    thisPlayer = {...updatedPlayer}
-    sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer))
-  })
+  // socket.on(`reconnected`, (updatedPlayer) => {
+  //   console.log('updted player', updatedPlayer);
+  //   thisPlayer = { ...updatedPlayer };
+  //   sessionStorage.setItem(`thisPlayer`, JSON.stringify(thisPlayer));
+  // });
 
-  // $: console.log(
-  //   'connected players',
-  //   players.filter(({ connected }) => connected),
-  // );
+  // // $: console.log(
+  // //   'connected players',
+  // //   players.filter(({ connected }) => connected),
+  // // );
 
-  // $: console.log('this player is', thisPlayer);
+  // // $: console.log('this player is', thisPlayer);
 
-  socket.on(`assignedRoles`, (assignedRole, otherMafia) => {
-    console.log('your role is', assignedRole);
-    thisPlayer = { ...thisPlayer, role: assignedRole };
-    if (otherMafia) mafia = [...otherMafia];
-  });
+  // socket.on(`assignedRoles`, (assignedRole, otherMafia) => {
+  //   console.log('your role is', assignedRole);
+  //   thisPlayer = { ...thisPlayer, role: assignedRole };
+  //   if (otherMafia) mafia = [...otherMafia];
+  // });
 
-  // $: console.log('role is', thisPlayer.role);
+  // // $: console.log('role is', thisPlayer.role);
 
-  const handleStart = () => {
-    socket.emit(`start`, gameId);
-  };
+  // const handleStart = () => {
+  //   socket.emit(`start`, gameId);
+  // };
 
-  let playerToDie;
+  // let playerToDie;
 
-  socket.on(`gameStarted`, (updatedStages) => {
-    stages = { ...updatedStages };
-  });
+  // socket.on(`gameStarted`, (updatedStages) => {
+  //   stages = { ...updatedStages };
+  // });
 
-  let nominating = false;
-  const handleNominatePlayer = (playerToNominate) => {
-    if (stages.mafiaAwake) {
-      return socket.emit(`assassinate`, playerToNominate, thisPlayer, gameId);
-    }
-    if (stages.detectiveAwake) {
-      confirmInvestigation = false;
-      investigating = true;
-      return socket.emit(`investigate`, playerToNominate, thisPlayer, gameId);
-    }
-    if (stages.day) {
-      playerToNominate = { ...playerToNominate };
-      return socket.emit(`nominate`, playerToNominate, thisPlayer, gameId);
-    }
-    if (stages.twoNominations) {
-      console.log('lynching player');
-      confirmNomination = false;
-      nominating = true;
-      playerToNominate = { ...playerToNominate };
-      return socket.emit(`lynch`, playerToNominate, thisPlayer, gameId);
-    }
-  };
+  // let nominating = false;
+  // const handleNominatePlayer = (playerToNominate) => {
+  //   if (stages.mafiaAwake) {
+  //     return socket.emit(`assassinate`, playerToNominate, thisPlayer, gameId);
+  //   }
+  //   if (stages.detectiveAwake) {
+  //     confirmInvestigation = false;
+  //     investigating = true;
+  //     return socket.emit(`investigate`, playerToNominate, thisPlayer, gameId);
+  //   }
+  //   if (stages.day) {
+  //     playerToNominate = { ...playerToNominate };
+  //     return socket.emit(`nominate`, playerToNominate, thisPlayer, gameId);
+  //   }
+  //   if (stages.twoNominations) {
+  //     console.log('lynching player');
+  //     confirmNomination = false;
+  //     nominating = true;
+  //     playerToNominate = { ...playerToNominate };
+  //     return socket.emit(`lynch`, playerToNominate, thisPlayer, gameId);
+  //   }
+  // };
 
-  socket.on(`postAssassination`, (updatedGame) => {
-    thisPlayer = updatedGame.players.find(
-      ({ name }) => name === thisPlayer.name,
-    );
-    players = [...updatedGame.players];
-    if (updatedGame.nominatedPlayers.length) {
-      playerToDie = { ...updatedGame.nominatedPlayers[0] };
-    }
-  });
+  // socket.on(`postAssassination`, (updatedGame) => {
+  //   thisPlayer = updatedGame.players.find(
+  //     ({ name }) => name === thisPlayer.name,
+  //   );
+  //   players = [...updatedGame.players];
+  //   if (updatedGame.nominatedPlayers.length) {
+  //     playerToDie = { ...updatedGame.nominatedPlayers[0] };
+  //   }
+  // });
 
-  const handleConfirmAssassination = () => {
-    console.log(`confirmed that ${playerToDie.name} will be killed`);
-    socket.emit(`confirmAssassination`, playerToDie, gameId);
-  };
+  // const handleConfirmAssassination = () => {
+  //   console.log(`confirmed that ${playerToDie.name} will be killed`);
+  //   socket.emit(`confirmAssassination`, playerToDie, gameId);
+  // };
 
-  const getNominatedBy = (nominatedBy) => {
-    const nominators = nominatedBy
-      .filter(({ _id }) => _id !== thisPlayer._id)
-      .map(({ name }) => name);
-    return nominators.length ? `Nominated by ${nominators.join(`, `)}` : ``;
-  };
+  // const getNominatedBy = (nominatedBy) => {
+  //   const nominators = nominatedBy
+  //     .filter(({ _id }) => _id !== thisPlayer._id)
+  //     .map(({ name }) => name);
+  //   return nominators.length ? `Nominated by ${nominators.join(`, `)}` : ``;
+  // };
 
-  socket.on(`detectiveAwake`, (updatedGame) => {
-    stages = { ...updatedGame.stages };
-  });
-  let investigating = false;
+  // socket.on(`detectiveAwake`, (updatedGame) => {
+  //   stages = { ...updatedGame.stages };
+  // });
+  // let investigating = false;
 
-  let playerToInvestigate = {};
-  const handleConfirmInvestigation = (player) => {
-    playerToInvestigate = { ...player };
-    confirmInvestigation = true;
-  };
+  // let playerToInvestigate = {};
+  // const handleConfirmInvestigation = (player) => {
+  //   playerToInvestigate = { ...player };
+  //   confirmInvestigation = true;
+  // };
 
-  let investigationResult = ``;
+  // let investigationResult = ``;
 
-  socket.on(`investigationResult`, (isMafia, investigatedPlayer) => {
-    investigating = false;
-    investigationResult = `${investigatedPlayer.name} ${
-      isMafia ? `is` : `is not`
-    } a member of the mafia`;
-  });
+  // socket.on(`investigationResult`, (isMafia, investigatedPlayer) => {
+  //   investigating = false;
+  //   investigationResult = `${investigatedPlayer.name} ${
+  //     isMafia ? `is` : `is not`
+  //   } a member of the mafia`;
+  // });
 
-  const handleEndDetectiveStage = () => {
-    investigationResult = ``;
-    socket.emit(`endDetectiveTurn`, gameId);
-  };
+  // const handleEndDetectiveStage = () => {
+  //   investigationResult = ``;
+  //   socket.emit(`endDetectiveTurn`, gameId);
+  // };
 
-  let deadPlayers = [];
-  $: console.log('dead players are', deadPlayers);
+  // let deadPlayers = [];
+  // $: console.log('dead players are', deadPlayers);
 
-  let lastPlayerKilled = {};
+  // let lastPlayerKilled = {};
 
-  socket.on(`day`, (updatedGame) => {
-    console.log('updated game is', updatedGame);
-    stages = { ...updatedGame.stages };
-    lastPlayerKilled = { ...updatedGame.lastPlayerKilled };
-    thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
-    players = [...updatedGame.players];
-  });
+  // socket.on(`day`, (updatedGame) => {
+  //   console.log('updated game is', updatedGame);
+  //   stages = { ...updatedGame.stages };
+  //   lastPlayerKilled = { ...updatedGame.lastPlayerKilled };
+  //   thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
+  //   players = [...updatedGame.players];
+  // });
 
-  let confirmNomination = false;
-  const handleConfirmNomination = (player) => {
-    playerToNominate = { ...player };
-    confirmNomination = true;
-  };
+  // let confirmNomination = false;
+  // const handleConfirmNomination = (player) => {
+  //   playerToNominate = { ...player };
+  //   confirmNomination = true;
+  // };
 
-  let nominatedPlayers = [];
+  // let nominatedPlayers = [];
 
-  socket.on(`postNomination`, (updatedGame) => {
-    console.log('updated hame post nonmination', updatedGame);
-    players = [...updatedGame.players];
-    stages = { ...updatedGame.stages };
-    thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
-    nominatedPlayers = [...updatedGame.nominatedPlayers];
-  });
+  // socket.on(`postNomination`, (updatedGame) => {
+  //   console.log('updated hame post nonmination', updatedGame);
+  //   players = [...updatedGame.players];
+  //   stages = { ...updatedGame.stages };
+  //   thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
+  //   nominatedPlayers = [...updatedGame.nominatedPlayers];
+  // });
 
-  socket.on(`postLynching`, (updatedGame) => {
-    console.log('updated hame post ly ching', updatedGame);
-    players = [...updatedGame.players];
-    stages = { ...updatedGame.stages };
-    thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
-    lastPlayerKilled = { ...updatedGame.lastPlayerKilled };
-    nominatedPlayers = [...updatedGame.nominatedPlayers];
-  });
+  // socket.on(`postLynching`, (updatedGame) => {
+  //   console.log('updated hame post ly ching', updatedGame);
+  //   players = [...updatedGame.players];
+  //   stages = { ...updatedGame.stages };
+  //   thisPlayer = updatedGame.players.find(({ _id }) => _id === thisPlayer._id);
+  //   lastPlayerKilled = { ...updatedGame.lastPlayerKilled };
+  //   nominatedPlayers = [...updatedGame.nominatedPlayers];
+  // });
 
-  $: console.log('players area', players);
+  // $: console.log('players area', players);
 
-  $: console.log('stages are', stages);
+  // $: console.log('stages are', stages);
 
-  const canNominate = (player, thisPlayer, stages) => {
-    return (
-      (player.isAlive && thisPlayer.role === `mafia` && stages.mafiaAwake) ||
-      (thisPlayer.role === `detective` &&
-        thisPlayer.isAlive &&
-        stages.detectiveAwake &&
-        !investigating) ||
-      (stages.day && player.isAlive && thisPlayer.isAlive) ||
-      (!nominating &&
-        thisPlayer.isAlive &&
-        stages.twoNominations &&
-        nominatedPlayers.some(({ _id }) => _id === player._id))
-    );
-  };
+  // const canNominate = (player, thisPlayer, stages) => {
+  //   return (
+  //     (player.isAlive && thisPlayer.role === `mafia` && stages.mafiaAwake) ||
+  //     (thisPlayer.role === `detective` &&
+  //       thisPlayer.isAlive &&
+  //       stages.detectiveAwake &&
+  //       !investigating) ||
+  //     (stages.day && player.isAlive && thisPlayer.isAlive) ||
+  //     (!nominating &&
+  //       thisPlayer.isAlive &&
+  //       stages.twoNominations &&
+  //       nominatedPlayers.some(({ _id }) => _id === player._id))
+  //   );
+  // };
 </script>
 
 <style>
