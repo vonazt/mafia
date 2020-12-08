@@ -31,8 +31,11 @@ export default class PlayerResolver {
     return `healthy`;
   }
   @Mutation(() => Game)
-  async create() {
-    return this.gameService.create();
+  async create(@PubSub() pubsub: PubSubEngine) {
+    const updatedGame = await this.gameService.create();
+    const updatedGamePayload = updatedGame.players;
+    await pubsub.publish(`NEW_PLAYERS`, updatedGamePayload);
+    return updatedGame;
   }
 
   @Mutation(() => Game)
@@ -48,7 +51,7 @@ export default class PlayerResolver {
     @Root() updatedGamePayload: Game,
     @Arg(`gameId`) gameId: string,
   ): Game {
-    console.log('publishing');
+    console.log('game id is', gameId);
     return { ...updatedGamePayload };
   }
 }

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { Container } from 'typedi';
 import path from 'path';
+import http from 'http';
 import connectToMongo from './mongo';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
@@ -28,7 +29,13 @@ const init = async () => {
 
   const server = new ApolloServer({
     schema,
+    subscriptions: {
+      path: `/subscriptions`
+    }
   });
+
+  const httpServer = http.createServer(app);
+  server.installSubscriptionHandlers(httpServer);
 
   server.applyMiddleware({ app, path: '/graphql' });
 
@@ -39,7 +46,7 @@ const init = async () => {
     res.sendFile(path.resolve(__dirname, 'public', 'index.html'));
   });
 
-  app.listen(process.env.PORT, () => {
+  httpServer.listen(process.env.PORT, () => {
     console.log(`Server is up at port ${process.env.PORT}`);
   });
 };

@@ -8,10 +8,10 @@
   setClient(client);
 
   $: if ($gameStore.gameId) {
-    const subscription = subscribe(GAME_SUBSCRIPTION, {
+    const { data } = subscribe(GAME_SUBSCRIPTION, {
       variables: { gameId: $gameStore.gameId },
     });
-    console.log('subscription is', subscription)
+    console.log('subscription is', data);
   }
 </script>
 
