@@ -1,6 +1,6 @@
 <script>
   import Button from './common/Button.svelte';
-  import { mutation, subscribe } from 'svelte-apollo';
+  import { mutation } from 'svelte-apollo';
   import { CREATE_GAME} from '../gql';
   import gameStore from '../stores/game';
 

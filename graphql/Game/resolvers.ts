@@ -33,7 +33,7 @@ export default class PlayerResolver {
   @Mutation(() => Game)
   async create(@PubSub() pubsub: PubSubEngine) {
     const updatedGame = await this.gameService.create();
-    const updatedGamePayload = updatedGame.players;
+    const updatedGamePayload = updatedGame;
     await pubsub.publish(`NEW_PLAYERS`, updatedGamePayload);
     return updatedGame;
   }
@@ -41,7 +41,7 @@ export default class PlayerResolver {
   @Mutation(() => Game)
   async join(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
     const updatedGame: LeanGameDocument = await this.gameService.join(gameId);
-    const updatedGamePayload = updatedGame.players;
+    const updatedGamePayload = updatedGame;
     await pubsub.publish(`NEW_PLAYERS`, updatedGamePayload);
     return updatedGame;
   }
@@ -52,6 +52,7 @@ export default class PlayerResolver {
     @Arg(`gameId`) gameId: string,
   ): Game {
     console.log('game id is', gameId);
+    console.log('updated game is', updatedGamePayload)
     return { ...updatedGamePayload };
   }
 }

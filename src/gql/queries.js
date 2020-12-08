@@ -11,6 +11,20 @@ export const CREATE_GAME = gql`
   }
 `;
 
+export const JOIN_GAME = gql`
+  mutation join($gameId: String!) {
+    join(gameId: $gameId) {
+      gameId
+      stages {
+        intro
+      }
+      players {
+        name
+      }
+    }
+  }
+`;
+
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
     updatedGame(gameId: $gameId) {
