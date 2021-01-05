@@ -26,10 +26,10 @@ export default class GameResolver {
     return `healthyGame`;
   }
   @Mutation(() => Game)
-  async create(@PubSub() pubsub: PubSubEngine) {
+  async create() {
     const updatedGame = await this.gameService.create();
-    const updatedGamePayload = updatedGame;
-    await pubsub.publish(`NEW_PLAYERS`, updatedGamePayload);
+    // const updatedGamePayload = updatedGame;
+    // await pubsub.publish(`NEW_PLAYERS`, updatedGamePayload);
     return updatedGame;
   }
 

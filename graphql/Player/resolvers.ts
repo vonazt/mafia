@@ -34,7 +34,7 @@ export default class PlayerResolver {
       player,
     );
     await pubsub.publish(`NEW_PLAYERS`, updatedGame);
-    console.log('UPDATED GAME AFTER ADDING PLAYER', updatedGame);
+    // console.log('UPDATED GAME AFTER ADDING PLAYER', updatedGame);
     return updatedGame;
   }
 }

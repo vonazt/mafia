@@ -44,6 +44,7 @@ export default class GameRepository implements IGameRepository {
     this.GameModel.findOneAndUpdate({ gameId }, operation, {
       new: true,
       useFindAndModify: false,
+      lean: true
     })
       .populate(`players`)
       .populate({

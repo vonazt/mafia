@@ -25,6 +25,18 @@ export const JOIN_GAME = gql`
   }
 `;
 
+export const ADD_PLAYER = gql`
+  mutation addPlayer($gameId: String!, $player: PlayerInput!) {
+    addPlayer(gameId: $gameId, player: $player) {
+      gameId
+      players {
+        name
+        _id
+      }
+    }
+  }
+`
+
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
     updatedGame(gameId: $gameId) {
@@ -35,3 +47,5 @@ export const GAME_SUBSCRIPTION = gql`
     }
   }
 `;
+
+

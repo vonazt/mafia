@@ -1,5 +1,7 @@
 <script>
-  import Header from './Header.svelte'
+  import AddPlayer from './AddPlayer.svelte';
+  import Header from './Header.svelte';
 </script>
 
 <Header />
+<AddPlayer />
