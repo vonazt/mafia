@@ -40,13 +40,20 @@ export default class GameResolver {
     return updatedGame;
   }
 
-  @Subscription({ topics: `NEW_PLAYERS` })
+  @Subscription({
+    topics: `NEW_PLAYERS`,
+    filter: ({ payload, args }) => {
+      console.log('payload is', payload);
+      console.log('args are', args);
+      return payload.gameId === args.gameId;
+    },
+  })
   updatedGame(
     @Root() updatedGamePayload: Game,
     @Arg(`gameId`) gameId: string,
   ): Game {
-    console.log('game id is', gameId);
-    console.log('updated game is', updatedGamePayload)
+    // console.log('game id is', gameId);
+    // console.log('updated game is', updatedGamePayload)
     return { ...updatedGamePayload };
   }
 }
