@@ -1,8 +1,6 @@
-import { Schema } from 'mongoose';
 
 export type Player = {
-  _id?: Schema.Types.ObjectId;
-  socketId: string;
+  _id?: string;
   name: string;
   role?: string;
   isAlive?: boolean;

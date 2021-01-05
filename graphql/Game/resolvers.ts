@@ -5,30 +5,25 @@ import {
   Resolver,
   Query,
   Mutation,
-  Ctx,
   Arg,
   Subscription,
-  ObjectType,
-  Field,
   Root,
   PubSub,
   PubSubEngine,
-  Publisher,
 } from 'type-graphql';
 import { Game } from './types';
 import { IGameService } from '../../Services/GameService';
-import { Player } from '../PlayerResolver';
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
 
 @Service()
 @Resolver(Game)
-export default class PlayerResolver {
+export default class GameResolver {
   constructor(
     @Inject(`GAME_SERVICE`) private readonly gameService: IGameService,
   ) {}
   @Query(() => String)
-  healthy() {
-    return `healthy`;
+  healthyGame() {
+    return `healthyGame`;
   }
   @Mutation(() => Game)
   async create(@PubSub() pubsub: PubSubEngine) {
@@ -41,8 +36,7 @@ export default class PlayerResolver {
   @Mutation(() => Game)
   async join(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
     const updatedGame: LeanGameDocument = await this.gameService.join(gameId);
-    const updatedGamePayload = updatedGame;
-    await pubsub.publish(`NEW_PLAYERS`, updatedGamePayload);
+    await pubsub.publish(`NEW_PLAYERS`, updatedGame);
     return updatedGame;
   }
 

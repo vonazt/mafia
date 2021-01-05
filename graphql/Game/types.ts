@@ -1,5 +1,5 @@
 import { ObjectType, Field } from 'type-graphql';
-import { Player } from '../PlayerResolver';
+import { Player } from '../Player/types';
 
 @ObjectType()
 class Stages {

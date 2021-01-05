@@ -3,7 +3,6 @@ import { Player } from '../Player';
 
 export interface IPlayerDocument extends Document {
   _id: Schema.Types.ObjectId;
-  socketId: string;
   name: string;
   role?: string;
   isAlive?: boolean;
@@ -14,5 +13,5 @@ export interface IPlayerDocument extends Document {
 
 export type LeanPlayerDocument = Pick<
   IPlayerDocument,
-  '_id' | 'socketId' | 'name' | 'role' | 'isAlive' | 'nominatedBy' | 'connected'
+  '_id' | 'name' | 'role' | 'isAlive' | 'nominatedBy' | 'connected'
 >;

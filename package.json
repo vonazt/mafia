@@ -49,6 +49,7 @@
     "@types/socket.io-client": "^1.4.34",
     "apollo-server-express": "^2.19.0",
     "axios": "^0.21.0",
+    "class-validator": "^0.12.2",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "http": "^0.0.1-security",

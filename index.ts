@@ -7,8 +7,9 @@ import http from 'http';
 import connectToMongo from './mongo';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
-import { gameResolvers } from './graphql/';
+import { gameResolvers, playerResolvers } from './graphql/';
 import GameHandlerFactory from './Factories/GameHandlerFactory';
+import PlayerHandlerFactory from './Factories/PlayerHandlerFactory';
 
 const init = async () => {
   dotenv.config();
@@ -22,16 +23,20 @@ const init = async () => {
     factory: () => GameHandlerFactory.build(),
   });
 
+  Container.set({
+    id: 'PLAYER_SERVICE', factory: () => PlayerHandlerFactory.build()
+  })
+
   const schema = await buildSchema({
-    resolvers: [gameResolvers],
+    resolvers: [gameResolvers, playerResolvers],
     container: Container,
   });
 
   const server = new ApolloServer({
     schema,
     subscriptions: {
-      path: `/subscriptions`
-    }
+      path: `/subscriptions`,
+    },
   });
 
   const httpServer = http.createServer(app);

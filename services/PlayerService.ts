@@ -1,4 +1,3 @@
-import { Service, Inject } from 'typedi';
 import { LeanPlayerDocument } from '../DomainObjects/Mongoose/PlayerDocuments';
 import { LeanGameDocument } from '../DomainObjects/Mongoose/GameDocuments';
 import {
@@ -9,11 +8,7 @@ import { IPlayerRepository } from '../Repositories/PlayerRepository';
 import { IGameRepository } from '../Repositories/GameRepository';
 
 export interface IPlayerService {
-  add: (
-    gameId: string,
-    player: Player,
-    socketId: string,
-  ) => Promise<LeanGameDocument>;
+  add: (gameId: string, player: Player) => Promise<LeanGameDocument>;
   assassinate: (
     player: Player,
     mafiaHitman: Player,
@@ -37,17 +32,14 @@ export interface IPlayerService {
   reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
   disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
-@Service()
 export default class PlayerService implements IPlayerService {
   constructor(
-    @Inject(`PLAYER_SERVICE`)
     private playerRepository: IPlayerRepository,
     private gameRepository: IGameRepository,
   ) {}
   public add = async (
     gameId: string,
     player: Player,
-    socketId: string,
   ): Promise<LeanGameDocument> => {
     const { players }: LeanGameDocument = await this.gameRepository.getById(
       gameId,
@@ -59,7 +51,6 @@ export default class PlayerService implements IPlayerService {
     if (!playerAlreadyInGame) {
       const newPlayer = await this.playerRepository.create({
         name: player.name,
-        socketId,
       });
       return this.gameRepository.update(gameId, {
         $addToSet: {
@@ -67,7 +58,6 @@ export default class PlayerService implements IPlayerService {
         },
       });
     }
-    await this.playerRepository.reconnect(playerAlreadyInGame, socketId);
 
     return this.gameRepository.getById(gameId);
   };

@@ -9,7 +9,6 @@
     const {
       data: { create: game },
     } = await createGame();
-    console.log('GAME IS ', game);
     gameStore.update(() => game);
 
   };

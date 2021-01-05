@@ -5,6 +5,7 @@
   import CreateGame from './components/CreateGame.svelte';
   import JoinGame from './components/JoinGame.svelte'
   import Container from './components/common/Container.svelte';
+  import GameRoom from './components/GameRoom/GameRoom.svelte'
   import { GAME_SUBSCRIPTION } from './gql';
   setClient(client);
 
@@ -16,9 +17,14 @@
     });
     console.log('subscription is', subscription);
     gamesSubscription = subscription
+    if (subscription.data?.updatedGame) {
+      $gameStore.update(() => subscription.data.updatedGame)
+    }
   }
 
   $: console.log('game ssubceiotiot is', $gamesSubscription)
+  $: console.log('game store is', $gameStore)
+
 </script>
 
 <main>
@@ -26,6 +32,6 @@
     {#if !$gameStore.gameId}
       <CreateGame />
       <JoinGame />
-    {:else}{$gameStore.gameId}{/if}
+    {:else}<GameRoom />{/if}
   </Container>
 </main>
