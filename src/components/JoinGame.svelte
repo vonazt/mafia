@@ -9,7 +9,7 @@
   const handleJoin = async () => {
     console.log('game id is', gameId);
     const {
-      data: { join: game },
+      data: { joinGame: game },
     } = await joinGame({ variables: { gameId } });
     console.log('game is', game);
     gameStore.update(() => game);

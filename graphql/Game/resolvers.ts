@@ -13,7 +13,7 @@ import {
 import { Game } from './types';
 import { IGameService } from '../../Services/GameService';
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
-import {GAME_SERVICE, UPDATED_GAME} from '../../constants'
+import { GAME_SERVICE, PLAYER_UPDATE, UPDATED_GAME } from '../../constants';
 
 @Service()
 @Resolver(Game)
@@ -34,17 +34,29 @@ export default class GameResolver {
   }
 
   @Mutation(() => Game)
-  async joinGame(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
+  async joinGame(
+    @Arg(`gameId`) gameId: string,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
     const updatedGame: LeanGameDocument = await this.gameService.join(gameId);
     await pubsub.publish(UPDATED_GAME, updatedGame);
     return updatedGame;
   }
 
   @Mutation(() => Game)
-  async startGame(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
-    const updatedGame: LeanGameDocument = await this.gameService.start(gameId)
-    await pubsub.publish(UPDATED_GAME, updatedGame);
-    return updatedGame
+  async startGame(
+    @Arg(`gameId`) gameId: string,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
+    const updatedGame: LeanGameDocument = await this.gameService.start(gameId);
+    await Promise.all([
+      updatedGame.players.map((player) =>
+        pubsub.publish(PLAYER_UPDATE, player),
+      ),
+      pubsub.publish(UPDATED_GAME, updatedGame),
+    ]);
+
+    return updatedGame;
   }
 
   @Subscription({
@@ -55,8 +67,6 @@ export default class GameResolver {
     @Root() updatedGamePayload: Game,
     @Arg(`gameId`) gameId: string,
   ): Game | null {
-    // console.log('game id is', gameId);
-    // console.log('updated game is', updatedGamePayload)
     return { ...updatedGamePayload };
   }
 }

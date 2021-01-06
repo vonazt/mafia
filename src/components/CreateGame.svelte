@@ -7,7 +7,7 @@
   const createGame = mutation(CREATE_GAME);
   const handleCreate = async () => {
     const {
-      data: { create: game },
+      data: { createGame: game },
     } = await createGame();
     gameStore.update(() => game);
 

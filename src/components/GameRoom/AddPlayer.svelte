@@ -6,13 +6,26 @@
   import Button from '../common/Button.svelte';
 
   export let joined;
+  export let setPlayerId;
 
   let playerName = '';
   const addPlayer = mutation(ADD_PLAYER);
+
   const handleAddPlayer = async () => {
-    await addPlayer({
+    const {
+      data: {
+        addPlayer: { players },
+      },
+    } = await addPlayer({
       variables: { gameId: $gameStore.gameId, player: { name: playerName } },
     });
+
+    console.log('players are', players);
+
+    const { _id } = players.find(({ name }) => name === playerName);
+    console.log('id is', _id);
+
+    setPlayerId(_id);
     joined();
   };
 </script>

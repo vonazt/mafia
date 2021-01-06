@@ -8,11 +8,13 @@ import {
   Arg,
   PubSub,
   PubSubEngine,
+  Subscription,
+  Root,
 } from 'type-graphql';
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
 import { PlayerInput, Player } from './types';
 import { Game } from '../Game/types';
-import { PLAYER_SERVICE, UPDATED_GAME } from '../../constants';
+import { PLAYER_SERVICE, UPDATED_GAME, PLAYER_UPDATE } from '../../constants';
 
 @Service()
 @Resolver(Player)
@@ -36,5 +38,16 @@ export default class PlayerResolver {
     );
     await pubsub.publish(UPDATED_GAME, updatedGame);
     return updatedGame;
+  }
+
+  @Subscription({
+    topics: PLAYER_UPDATE,
+    filter: ({ payload, args }) => payload._id.toString() === args._id,
+  })
+  updatedPlayer(
+    @Root() updatedPlayer: Player,
+    @Arg(`_id`) _id: string,
+  ): Player {
+    return { ...updatedPlayer };
   }
 }

@@ -1,9 +1,15 @@
 <script>
+  import { mutation } from 'svelte-apollo';
   import gameStore from '../../stores/game';
   import Button from '../common/Button.svelte';
+  import { START_GAME } from '../../gql';
 
-  const handleStart = () => {
+  const startGame = mutation(START_GAME);
+
+  const handleStart = async () => {
     console.log('starting...');
+
+    await startGame({ variables: { gameId: $gameStore.gameId } });
   };
 </script>
 

@@ -57,4 +57,14 @@ export const GAME_SUBSCRIPTION = gql`
   }
 `;
 
+export const PLAYER_SUBSCRIPTION = gql`
+  subscription OnPlayerUpdated($_id: String!) {
+    updatedPlayer(_id: $_id) {
+      name
+      _id
+      role
+    }
+  }
+`
+
 

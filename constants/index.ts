@@ -1,4 +1,5 @@
 export const UPDATED_GAME = `UPDATED_GAME`;
+export const PLAYER_UPDATE = `PLAYER_UPDATE`
 export const GAME_SERVICE = `GAME_SERVICE`
 export const PLAYER_SERVICE = `PLAYER_SERVICE`
 export const INTRO = `intro`
