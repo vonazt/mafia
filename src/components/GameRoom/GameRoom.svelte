@@ -10,8 +10,10 @@
   }
 </script>
 
+<div class="flex flex-wrap w-full h-full content-start pt-5">
 <Header />
 {#if !hasJoined}
   <AddPlayer joined={joined} />
 {/if}
 <PlayersList />
+</div>
