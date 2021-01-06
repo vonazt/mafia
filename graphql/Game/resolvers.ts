@@ -26,7 +26,7 @@ export default class GameResolver {
     return `healthyGame`;
   }
   @Mutation(() => Game)
-  async create(@PubSub() pubsub: PubSubEngine) {
+  async createGame(@PubSub() pubsub: PubSubEngine) {
     const updatedGame = await this.gameService.create();
     const updatedGamePayload = updatedGame;
     await pubsub.publish(UPDATED_GAME, updatedGamePayload);
@@ -34,10 +34,17 @@ export default class GameResolver {
   }
 
   @Mutation(() => Game)
-  async join(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
+  async joinGame(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
     const updatedGame: LeanGameDocument = await this.gameService.join(gameId);
     await pubsub.publish(UPDATED_GAME, updatedGame);
     return updatedGame;
+  }
+
+  @Mutation(() => Game)
+  async startGame(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine) {
+    const updatedGame: LeanGameDocument = await this.gameService.start(gameId)
+    await pubsub.publish(UPDATED_GAME, updatedGame);
+    return updatedGame
   }
 
   @Subscription({

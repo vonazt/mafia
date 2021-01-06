@@ -2,11 +2,9 @@ import { gql } from '@apollo/client';
 
 export const CREATE_GAME = gql`
   mutation {
-    create {
+    createGame {
       gameId
-      stages {
-        intro
-      }
+      stage
       players {
         name
       }
@@ -15,18 +13,25 @@ export const CREATE_GAME = gql`
 `;
 
 export const JOIN_GAME = gql`
-  mutation join($gameId: String!) {
-    join(gameId: $gameId) {
+  mutation joinGame($gameId: String!) {
+    joinGame(gameId: $gameId) {
       gameId
-      stages {
-        intro
-      }
+      stage
       players {
         name
       }
     }
   }
 `;
+
+export const START_GAME = gql`
+  mutation startGame($gameId: String!) {
+    startGame(gameId: $gameId) {
+      gameId
+      stage
+    }
+  }
+`
 
 export const ADD_PLAYER = gql`
   mutation addPlayer($gameId: String!, $player: PlayerInput!) {
@@ -47,6 +52,7 @@ export const GAME_SUBSCRIPTION = gql`
       players {
         name
       }
+      stage
     }
   }
 `;

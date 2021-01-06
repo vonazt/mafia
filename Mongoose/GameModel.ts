@@ -1,25 +1,37 @@
 import { Schema, model } from 'mongoose';
 import { IGameDocument } from '../DomainObjects/Mongoose/GameDocuments';
-
-const StageSchema = {
-  intro: { type: Boolean, default: true },
-  mafiaAwake: { type: Boolean, default: false },
-  detectiveAwake: { type: Boolean, default: false },
-  guardianAngelAwake: { type: Boolean, default: false },
-  day: { type: Boolean, default: false },
-  twoNominations: { type: Boolean, default: false },
-  tie: { type: Boolean, default: false },
-  playerLynched: { type: Boolean, default: false },
-};
+import {
+  INTRO,
+  MAFIA_AWAKE,
+  DETECTIVE_AWAKE,
+  GUARDIAN_ANGEL_AWAKE,
+  DAY,
+  TWO_NOMINATIONS,
+  TIE,
+  PLAYER_LYNCHED,
+} from '../constants';
 
 const GameSchema = new Schema({
   players: [{ type: Schema.Types.ObjectId, ref: `Player` }],
   gameId: String,
-  stages: StageSchema,
+  stage: {
+    type: String,
+    enum: [
+      INTRO,
+      MAFIA_AWAKE,
+      DETECTIVE_AWAKE,
+      GUARDIAN_ANGEL_AWAKE,
+      DAY,
+      TWO_NOMINATIONS,
+      TIE,
+      PLAYER_LYNCHED,
+    ],
+    default: INTRO,
+  },
   nominatedPlayers: [{ type: Schema.Types.ObjectId, ref: `Player` }],
   lastPlayerKilled: { type: Schema.Types.ObjectId, ref: `Player` },
 });
 
 const GamesModel = model<IGameDocument>(`Game`, GameSchema);
 
-export default GamesModel
+export default GamesModel;

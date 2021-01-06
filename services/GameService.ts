@@ -2,17 +2,17 @@ import { IGameRepository } from '../Repositories/GameRepository';
 import {
   IGameDocument,
   LeanGameDocument,
-  Stages,
 } from '../DomainObjects/Mongoose/GameDocuments';
 import { Player } from '../DomainObjects/Player';
 import { IPlayerRepository } from '../Repositories/PlayerRepository';
+import { MAFIA_AWAKE } from '../constants';
 
 export interface IGameService {
   create: () => Promise<IGameDocument>;
   join: (gameId: string) => Promise<LeanGameDocument>;
   start: (gameId: string) => Promise<LeanGameDocument>;
   endDetectiveTurn: (gameId: string) => Promise<LeanGameDocument>;
-  quit: (socketId: string) => Promise<LeanGameDocument>;
+  // quit: (socketId: string) => Promise<LeanGameDocument>;
 }
 
 export default class GameService implements IGameService {
@@ -43,29 +43,29 @@ export default class GameService implements IGameService {
     );
     return this.gameRepository.update(gameId, {
       players: players.map(({ _id }: Player) => _id),
-      $set: { 'stages.intro': false, 'stages.mafiaAwake': true },
+      $set: { stage: MAFIA_AWAKE },
     });
   };
 
   public endDetectiveTurn = async (
     gameId: string,
   ): Promise<LeanGameDocument> => {
-    const { players, stages }: LeanGameDocument = await this.gameRepository.getById(gameId);
+    const { players, stage }: LeanGameDocument = await this.gameRepository.getById(gameId);
     const gameHasGuardianAngel: Player = players.find(
       ({ role }: Player) => role === `guardianAngel`,
     );
 
-    const updatedStages: Stages = gameHasGuardianAngel
-      ? { ...stages, detectiveAwake: false, guardianAngelAwake: true }
-      : {
-          ...stages,
-          detectiveAwake: false,
-          day: true,
-        };
-    return this.gameRepository.update(gameId, { stages: updatedStages });
+    // const updatedStages: Stages = gameHasGuardianAngel
+    //   ? { ...stages, detectiveAwake: false, guardianAngelAwake: true }
+    //   : {
+    //       ...stages,
+    //       detectiveAwake: false,
+    //       day: true,
+    //     };
+    return this.gameRepository.update(gameId, { stage: `` });
   };
 
-  public quit = this.gameRepository.quit;
+  // public quit = this.gameRepository.quit;
 
   private shuffleRoles = (roles: string[]): string[] => {
     for (let i = roles.length - 1; i > 0; i--) {
