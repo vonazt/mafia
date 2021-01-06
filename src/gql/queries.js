@@ -7,6 +7,9 @@ export const CREATE_GAME = gql`
       stages {
         intro
       }
+      players {
+        name
+      }
     }
   }
 `;

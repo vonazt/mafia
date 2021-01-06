@@ -11,7 +11,7 @@ export interface IGameRepository {
   update: (gameId: string, operation: {}) => Promise<LeanGameDocument>;
   join: (gameId: string) => Promise<LeanGameDocument>;
   listPlayersInGame: (gameId: string) => Promise<Player[]>;
-  quit: (socketId: string) => Promise<LeanGameDocument>;
+  // quit: (socketId: string) => Promise<LeanGameDocument>;
 }
 
 export default class GameRepository implements IGameRepository {
@@ -77,10 +77,10 @@ export default class GameRepository implements IGameRepository {
     }
   };
 
-  public quit = async (socketId: string): Promise<LeanGameDocument> =>
-    this.GameModel.findOneAndUpdate(
-      { players: { $elemMatch: { socketId } } },
-      { $pull: { players: { socketId } } },
-      { new: true, lean: true, useFindAndModify: false },
-    );
+//   public quit = async (socketId: string): Promise<LeanGameDocument> =>
+//     this.GameModel.findOneAndUpdate(
+//       { players: { $elemMatch: { socketId } } },
+//       { $pull: { players: { socketId } } },
+//       { new: true, lean: true, useFindAndModify: false },
+//     );
 }

@@ -10,6 +10,7 @@ import { buildSchema } from 'type-graphql';
 import { gameResolvers, playerResolvers } from './graphql/';
 import GameHandlerFactory from './Factories/GameHandlerFactory';
 import PlayerHandlerFactory from './Factories/PlayerHandlerFactory';
+import {GAME_SERVICE, PLAYER_SERVICE} from './constants'
 
 const init = async () => {
   dotenv.config();
@@ -19,12 +20,12 @@ const init = async () => {
   const app = express();
 
   Container.set({
-    id: 'GAME_SERVICE',
+    id: GAME_SERVICE,
     factory: () => GameHandlerFactory.build(),
   });
 
   Container.set({
-    id: 'PLAYER_SERVICE', factory: () => PlayerHandlerFactory.build()
+    id: PLAYER_SERVICE, factory: () => PlayerHandlerFactory.build()
   })
 
   const schema = await buildSchema({

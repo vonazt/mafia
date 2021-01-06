@@ -12,12 +12,13 @@ import {
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
 import { PlayerInput, Player } from './types';
 import { Game } from '../Game/types';
+import { PLAYER_SERVICE, UPDATED_GAME } from '../../constants';
 
 @Service()
 @Resolver(Player)
 export default class PlayerResolver {
   constructor(
-    @Inject(`PLAYER_SERVICE`) private readonly playerService: IPlayerService,
+    @Inject(PLAYER_SERVICE) private readonly playerService: IPlayerService,
   ) {}
   @Query(() => String)
   healthyPlayer() {
@@ -33,8 +34,7 @@ export default class PlayerResolver {
       gameId,
       player,
     );
-    await pubsub.publish(`NEW_PLAYERS`, updatedGame);
-    // console.log('UPDATED GAME AFTER ADDING PLAYER', updatedGame);
+    await pubsub.publish(UPDATED_GAME, updatedGame);
     return updatedGame;
   }
 }
