@@ -22,10 +22,11 @@ export default class PlayerResolver {
   constructor(
     @Inject(PLAYER_SERVICE) private readonly playerService: IPlayerService,
   ) {}
-  @Query(() => String)
-  healthyPlayer() {
-    return `healthyPlayer`;
+  @Query(() => Boolean)
+  async investigatePlayer(@Arg(`_id`) _id: string) {
+    return this.playerService.investigate(_id)
   }
+
   @Mutation(() => Game)
   async addPlayer(
     @Arg('gameId') gameId: string,
@@ -87,6 +88,8 @@ export default class PlayerResolver {
     await pubsub.publish(UPDATED_GAME, updatedGame);
     return updatedGame;
   }
+
+
 
   @Subscription({
     topics: PLAYER_UPDATE,

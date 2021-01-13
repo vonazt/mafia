@@ -1,7 +1,7 @@
 <script>
   import { subscribe } from 'svelte-apollo';
   import { PLAYER_SUBSCRIPTION } from '../../gql';
-  import { INTRO, MAFIA, MAFIA_AWAKE } from '../../constants';
+  import { DETECTIVE, DETECTIVE_AWAKE, INTRO, MAFIA, MAFIA_AWAKE } from '../../constants';
   import {
     AddPlayer,
     Header,
@@ -10,6 +10,7 @@
     StageDescription,
     ConfirmAssassination,
     RejoinPlayer,
+    InvestigatePlayer
   } from './';
   import playerStore from '../../stores/player';
   import gameStore from '../../stores/game';
@@ -66,5 +67,8 @@
   <StageDescription />
   {#if $gameStore.nominatedPlayers.length && $gameStore.stage === MAFIA_AWAKE && $playerStore.role === MAFIA}
     <ConfirmAssassination />
+  {/if}
+  {#if $gameStore.stage === DETECTIVE_AWAKE && $playerStore.role === DETECTIVE}
+  <InvestigatePlayer />
   {/if}
 </div>

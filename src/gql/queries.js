@@ -43,7 +43,7 @@ export const START_GAME = gql`
       stage
     }
   }
-`
+`;
 
 export const ADD_PLAYER = gql`
   mutation addPlayer($gameId: String!, $player: PlayerInput!) {
@@ -56,9 +56,9 @@ export const ADD_PLAYER = gql`
       }
     }
   }
-`
+`;
 
-export const REJOIN_PLAYER= gql`
+export const REJOIN_PLAYER = gql`
   mutation rejoinPlayer($gameId: String!, $player: PlayerInput!) {
     rejoinPlayer(gameId: $gameId, player: $player) {
       gameId
@@ -73,11 +73,19 @@ export const REJOIN_PLAYER= gql`
       }
     }
   }
-`
+`;
 
 export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
-  mutation nominatePlayerForAssassination($playerId: String!, $mafiaHitmanId: String!, $gameId: String!) {
-    nominatePlayerForAssassination(playerId: $playerId, mafiaHitmanId: $mafiaHitmanId, gameId: $gameId) {
+  mutation nominatePlayerForAssassination(
+    $playerId: String!
+    $mafiaHitmanId: String!
+    $gameId: String!
+  ) {
+    nominatePlayerForAssassination(
+      playerId: $playerId
+      mafiaHitmanId: $mafiaHitmanId
+      gameId: $gameId
+    ) {
       stage
       players {
         nominatedBy {
@@ -92,7 +100,7 @@ export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
       }
     }
   }
-`
+`;
 
 export const CONFIRM_ASSASSINATION = gql`
   mutation confirmAssassination($playerKilledId: String!, $gameId: String!) {
@@ -100,7 +108,13 @@ export const CONFIRM_ASSASSINATION = gql`
       stage
     }
   }
-`
+`;
+
+export const INVESTIGATE_PLAYER = gql`
+  query investigatePlayer($_id: String!) {
+    investigatePlayer(_id: $_id)
+  }
+`;
 
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
@@ -134,6 +148,4 @@ export const PLAYER_SUBSCRIPTION = gql`
       isAlive
     }
   }
-`
-
-
+`;

@@ -6,7 +6,7 @@ import {
 } from '../DomainObjects/Player';
 import { IPlayerRepository } from '../Repositories/PlayerRepository';
 import { IGameRepository } from '../Repositories/GameRepository';
-import { DETECTIVE_AWAKE } from '../constants';
+import { DETECTIVE_AWAKE, MAFIA, ROLE } from '../constants';
 
 export interface IPlayerService {
   add: (gameId: string, player: Player) => Promise<LeanGameDocument>;
@@ -19,7 +19,7 @@ export interface IPlayerService {
     playerKilledId: string,
     gameId: string,
   ) => Promise<LeanGameDocument>;
-  investigate: (playerToInvestigate: Player) => Promise<boolean>;
+  investigate: (_id: string) => Promise<boolean>;
   nominate: (
     playerToNominate: Player,
     nominatedBy: Player,
@@ -113,14 +113,13 @@ export default class PlayerService implements IPlayerService {
   };
 
   public investigate = async (
-    playerToInvestigate: Player,
+    _id: string,
   ): Promise<boolean> => {
     const { role }: LeanPlayerDocument = await this.playerRepository.getById(
-      playerToInvestigate._id,
-      `role`,
+      _id,
+      ROLE,
     );
-    console.log('ROLE IS', role);
-    return role === `mafia`;
+    return role === MAFIA;
   };
 
   public nominate = async (

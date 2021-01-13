@@ -3,7 +3,13 @@
   import { NOMINATE_PLAYER_FOR_ASSASSINATION } from '../../gql';
   import gameStore from '../../stores/game';
   import playerStore from '../../stores/player';
-  import { MAFIA_AWAKE, MAFIA, DETECTIVE, DETECTIVE_AWAKE } from '../../constants';
+  import detectiveStore from '../../stores/detective';
+  import {
+    MAFIA_AWAKE,
+    MAFIA,
+    DETECTIVE,
+    DETECTIVE_AWAKE,
+  } from '../../constants';
 
   const nominatePlayerForAssassination = mutation(
     NOMINATE_PLAYER_FOR_ASSASSINATION,
@@ -12,6 +18,8 @@
   const handleNominate = {
     [MAFIA_AWAKE]: (playerToNominate) =>
       nominateForAssassination(playerToNominate),
+    [DETECTIVE_AWAKE]: (playerToInvestigate) =>
+      detectiveStore.update((store) => ({ ...store, playerToInvestigate })),
   };
 
   let playerToNominate = {};
@@ -27,16 +35,16 @@
     });
   };
 
-  const canNominate = (player, currentPlayerRole) => {
+  const canNominate = (player, currentPlayerRole, detectiveIsInvestigating) => {
     return (
-      player.isAlive &&
-      currentPlayerRole === MAFIA &&
-      $gameStore.stage === MAFIA_AWAKE
-       ||
+      (player.isAlive &&
+        currentPlayerRole === MAFIA &&
+        $gameStore.stage === MAFIA_AWAKE) ||
       (currentPlayerRole === DETECTIVE &&
         player.isAlive &&
-        $gameStore.stage === DETECTIVE_AWAKE) 
-        // &&!investigating ||
+        $gameStore.stage === DETECTIVE_AWAKE &&
+        !detectiveIsInvestigating)
+      // ||
       // (stages.day && player.isAlive && thisPlayer.isAlive) ||
       // (!nominating &&
       //   thisPlayer.isAlive &&
@@ -52,7 +60,7 @@
   {/if}
   <ol>
     {#each $gameStore.players as player}
-      {#if canNominate(player, $playerStore.role)}
+      {#if canNominate(player, $playerStore.role, $detectiveStore.isInvestigating)}
         <input
           type="radio"
           bind:group={playerToNominate}
