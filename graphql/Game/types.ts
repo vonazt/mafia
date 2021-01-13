@@ -9,7 +9,7 @@ export class Game {
   gameId: string;
   @Field()
   stage: string;
-  @Field(() => Player)
+  @Field(() => Player, { nullable: true })
   lastPlayerKilled: Player;
   @Field(() => [Player], { nullable: `items` })
   nominatedPlayers: Player[];

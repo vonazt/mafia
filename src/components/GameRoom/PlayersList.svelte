@@ -4,10 +4,13 @@
   import gameStore from '../../stores/game';
   import playerStore from '../../stores/player';
   import detectiveStore from '../../stores/detective';
+  import guardianAngelStore from '../../stores/guardianAngel';
   import {
     MAFIA_AWAKE,
     MAFIA,
     DETECTIVE,
+    GUARDIAN_ANGEL,
+    GUARDIAN_ANGEL_AWAKE,
     DETECTIVE_AWAKE,
   } from '../../constants';
 
@@ -20,6 +23,8 @@
       nominateForAssassination(playerToNominate),
     [DETECTIVE_AWAKE]: (playerToInvestigate) =>
       detectiveStore.update((store) => ({ ...store, playerToInvestigate })),
+    [GUARDIAN_ANGEL_AWAKE]: (playerToProtect) =>
+      guardianAngelStore.update((store) => ({ ...store, playerToProtect })),
   };
 
   let playerToNominate = {};
@@ -35,15 +40,21 @@
     });
   };
 
-  const canNominate = (player, currentPlayerRole, detectiveIsInvestigating) => {
+  const canNominate = (
+    player,
+    currentPlayerRole,
+    detectiveIsInvestigating,
+    guardianAngelProtecting,
+  ) => {
     return (
-      (player.isAlive &&
-        currentPlayerRole === MAFIA &&
-        $gameStore.stage === MAFIA_AWAKE) ||
-      (currentPlayerRole === DETECTIVE &&
-        player.isAlive &&
-        $gameStore.stage === DETECTIVE_AWAKE &&
-        !detectiveIsInvestigating)
+      player.isAlive &&
+      ((currentPlayerRole === MAFIA && $gameStore.stage === MAFIA_AWAKE) ||
+        (currentPlayerRole === DETECTIVE &&
+          $gameStore.stage === DETECTIVE_AWAKE &&
+          !detectiveIsInvestigating) ||
+        (currentPlayerRole === GUARDIAN_ANGEL &&
+          $gameStore.stage === GUARDIAN_ANGEL_AWAKE &&
+          !guardianAngelProtecting))
       // ||
       // (stages.day && player.isAlive && thisPlayer.isAlive) ||
       // (!nominating &&
@@ -60,7 +71,7 @@
   {/if}
   <ol>
     {#each $gameStore.players as player}
-      {#if canNominate(player, $playerStore.role, $detectiveStore.isInvestigating)}
+      {#if canNominate(player, $playerStore.role, $detectiveStore.isInvestigating, $guardianAngelStore.isProtecting)}
         <input
           type="radio"
           bind:group={playerToNominate}

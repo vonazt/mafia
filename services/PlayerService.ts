@@ -20,6 +20,7 @@ export interface IPlayerService {
     gameId: string,
   ) => Promise<LeanGameDocument>;
   investigate: (_id: string) => Promise<boolean>;
+  protect: (_id: string, gameId: string) => Promise<boolean>;
   nominate: (
     playerToNominate: Player,
     nominatedBy: Player,
@@ -112,14 +113,21 @@ export default class PlayerService implements IPlayerService {
     });
   };
 
-  public investigate = async (
-    _id: string,
-  ): Promise<boolean> => {
+  public investigate = async (_id: string): Promise<boolean> => {
     const { role }: LeanPlayerDocument = await this.playerRepository.getById(
       _id,
       ROLE,
     );
     return role === MAFIA;
+  };
+
+  public protect = async (_id: string, gameId: string): Promise<boolean> => {
+    const {
+      lastPlayerKilled,
+    }: LeanGameDocument = await this.gameRepository.getById(gameId);
+    if (lastPlayerKilled._id.toString() === _id)
+      await this.gameRepository.update(gameId, { lastPlayerKilled: null });
+    return true;
   };
 
   public nominate = async (

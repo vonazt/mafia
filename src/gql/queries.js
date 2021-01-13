@@ -128,6 +128,12 @@ export const END_DETECTIVE_TURN = gql`
   }
 `
 
+export const PROTECT_PLAYER = gql`
+  mutation protectPlayer($_id: String!, $gameId: String!) {
+    protectPlayer(_id: $_id, gameId: $gameId)
+  }
+`
+
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
     updatedGame(gameId: $gameId) {

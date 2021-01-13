@@ -6,6 +6,7 @@ import StageDescription from './StageDescription.svelte';
 import ConfirmAssassination from './ConfirmAssassination.svelte';
 import RejoinPlayer from './RejoinPlayer.svelte';
 import InvestigatePlayer from './InvestigatePlayer.svelte';
+import ProtectPlayer from './ProtectPlayer.svelte';
 
 export {
   AddPlayer,
@@ -16,4 +17,5 @@ export {
   ConfirmAssassination,
   RejoinPlayer,
   InvestigatePlayer,
+  ProtectPlayer
 };

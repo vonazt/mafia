@@ -24,7 +24,7 @@ export default class PlayerResolver {
   ) {}
   @Query(() => Boolean)
   async investigatePlayer(@Arg(`_id`) _id: string) {
-    return this.playerService.investigate(_id)
+    return this.playerService.investigate(_id);
   }
 
   @Mutation(() => Game)
@@ -89,7 +89,13 @@ export default class PlayerResolver {
     return updatedGame;
   }
 
-
+  @Mutation(() => Boolean)
+  async protectPlayer(
+    @Arg(`_id`) _id: string,
+    @Arg(`gameId`) gameId: string,
+  ) {
+    return this.playerService.protect(_id, gameId);
+  }
 
   @Subscription({
     topics: PLAYER_UPDATE,
