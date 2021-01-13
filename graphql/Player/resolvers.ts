@@ -42,6 +42,23 @@ export default class PlayerResolver {
   }
 
   @Mutation(() => Game)
+  async rejoinPlayer(
+    @Arg('gameId') gameId: string,
+    @Arg('player') player: PlayerInput,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
+    const updatedGame: LeanGameDocument = await this.playerService.add(
+      gameId,
+      player,
+    );
+
+    await updatedGame.players.map((playerToUpdate) =>
+      pubsub.publish(PLAYER_UPDATE, playerToUpdate),
+    );
+    return updatedGame;
+  }
+
+  @Mutation(() => Game)
   async nominatePlayerForAssassination(
     @Arg('playerId') playerId: string,
     @Arg(`mafiaHitmanId`) mafiaHitmanId: string,
@@ -59,12 +76,15 @@ export default class PlayerResolver {
 
   @Subscription({
     topics: PLAYER_UPDATE,
-    filter: ({ payload, args }) => payload._id.toString() === args._id,
+    filter: ({ payload, args }) =>
+      payload._id.toString() === args._id.toString(),
   })
   updatedPlayer(
     @Root() updatedPlayer: Player,
     @Arg(`_id`) _id: string,
   ): Player {
+    console.log('UPDATING PLAYERS', updatedPlayer.name);
+
     return { ...updatedPlayer };
   }
 }

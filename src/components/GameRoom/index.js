@@ -4,5 +4,6 @@ import PlayersList from './PlayersList.svelte';
 import StartGame from './StartGame.svelte';
 import StageDescription from './StageDescription.svelte';
 import ConfirmAssassination from './ConfirmAssassination.svelte'
+import RejoinPlayer from './RejoinPlayer.svelte'
 
-export { AddPlayer, Header, PlayersList, StartGame, StageDescription, ConfirmAssassination };
+export { AddPlayer, Header, PlayersList, StartGame, StageDescription, ConfirmAssassination, RejoinPlayer };

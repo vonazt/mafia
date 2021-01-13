@@ -54,6 +54,19 @@ export const ADD_PLAYER = gql`
   }
 `
 
+export const REJOIN_PLAYER= gql`
+  mutation rejoinPlayer($gameId: String!, $player: PlayerInput!) {
+    rejoinPlayer(gameId: $gameId, player: $player) {
+      gameId
+      players {
+        name
+        _id
+        isAlive
+      }
+    }
+  }
+`
+
 export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
   mutation nominatePlayerForAssassination($playerId: String!, $mafiaHitmanId: String!, $gameId: String!) {
     nominatePlayerForAssassination(playerId: $playerId, mafiaHitmanId: $mafiaHitmanId, gameId: $gameId) {

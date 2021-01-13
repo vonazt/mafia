@@ -8,9 +8,9 @@
   const joinGame = mutation(JOIN_GAME);
   const handleJoin = async () => {
     const {
-      data: { joinGame: game },
+      data: { joinGame: updatedGame },
     } = await joinGame({ variables: { gameId } });
-    gameStore.update(() => game);
+    gameStore.update((game) => ({ ...game, ...updatedGame }));
   };
 </script>
 

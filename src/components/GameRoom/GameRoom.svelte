@@ -9,6 +9,7 @@
     StartGame,
     StageDescription,
     ConfirmAssassination,
+    RejoinPlayer,
   } from './';
   import playerStore from '../../stores/player';
   import gameStore from '../../stores/game';
@@ -18,8 +19,18 @@
     hasJoined = true;
   };
 
+  const getSavedPlayer = () =>
+    JSON.parse(window.sessionStorage.getItem(`player`));
+
+  const getSavedGameId = () => window.sessionStorage.getItem(`gameId`);
+
+  const getSavedPlayerId = () => {
+    const player = getSavedPlayer();
+    return player ? player._id : null;
+  };
+
   let playerSubscription;
-  let playerId;
+  let playerId = getSavedPlayerId();
 
   const setPlayerId = (id) => (playerId = id);
 
@@ -33,8 +44,6 @@
   $: if ($playerSubscription?.data?.updatedPlayer) {
     playerStore.update(() => $playerSubscription.data.updatedPlayer);
   }
-
-  $: console.log('GAME STORE IN GAME ROOM IS', $gameStore)
 </script>
 
 <div class="flex flex-wrap w-full h-full content-start pt-5">
@@ -43,8 +52,14 @@
   {#if $gameStore.stage === INTRO}
     <StartGame />
   {/if}
-  {#if !hasJoined}
+  {#if (!hasJoined && $gameStore.stage === INTRO && !playerId) || (playerId && $gameStore.gameId !== getSavedGameId())}
     <AddPlayer {joined} {setPlayerId} />
+  {/if}
+  {#if !hasJoined && playerId && $gameStore.gameId === getSavedGameId()}
+    <RejoinPlayer
+      {joined}
+      player={getSavedPlayer()}
+      gameId={$gameStore.gameId} />
   {/if}
   <StageDescription />
   {#if $gameStore.nominatedPlayers.length && $gameStore.stage === MAFIA_AWAKE && $playerStore.role === MAFIA}

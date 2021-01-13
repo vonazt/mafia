@@ -45,8 +45,11 @@ export default class PlayerService implements IPlayerService {
       gameId,
     );
     const playerAlreadyInGame: Player = players.find(
-      ({ name }: Player) => name === player.name,
+      ({ name, _id }: Player) => name === player.name && _id.toString() === player._id.toString(),
     );
+
+    console.log('PLAYER ALREADY IN GAME', playerAlreadyInGame);
+    
 
     if (!playerAlreadyInGame) {
       const newPlayer = await this.playerRepository.create({
