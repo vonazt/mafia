@@ -74,6 +74,20 @@ export default class PlayerResolver {
     return updatedGame;
   }
 
+  @Mutation(() => Game)
+  async confirmAssassination(
+    @Arg(`playerKilledId`) playerKilledId: string,
+    @Arg(`gameId`) gameId: string,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
+    const updatedGame: LeanGameDocument = await this.playerService.confirmAssassination(
+      playerKilledId,
+      gameId,
+    );
+    await pubsub.publish(UPDATED_GAME, updatedGame);
+    return updatedGame;
+  }
+
   @Subscription({
     topics: PLAYER_UPDATE,
     filter: ({ payload, args }) =>

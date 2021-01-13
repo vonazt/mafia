@@ -6,6 +6,7 @@ import {
 } from '../DomainObjects/Player';
 import { IPlayerRepository } from '../Repositories/PlayerRepository';
 import { IGameRepository } from '../Repositories/GameRepository';
+import { DETECTIVE_AWAKE } from '../constants';
 
 export interface IPlayerService {
   add: (gameId: string, player: Player) => Promise<LeanGameDocument>;
@@ -15,7 +16,7 @@ export interface IPlayerService {
     gameId: string,
   ) => Promise<LeanGameDocument>;
   confirmAssassination: (
-    killPlayerplayerToDie: Player,
+    playerKilledId: string,
     gameId: string,
   ) => Promise<LeanGameDocument>;
   investigate: (playerToInvestigate: Player) => Promise<boolean>;
@@ -45,7 +46,8 @@ export default class PlayerService implements IPlayerService {
       gameId,
     );
     const playerAlreadyInGame: Player = players.find(
-      ({ name, _id }: Player) => name === player.name && _id.toString() === player._id.toString(),
+      ({ name, _id }: Player) =>
+        name === player.name && _id.toString() === player._id.toString(),
     );
 
     if (!playerAlreadyInGame) {
@@ -93,13 +95,12 @@ export default class PlayerService implements IPlayerService {
   };
 
   public confirmAssassination = async (
-    playerToDie: Player,
+    playerKilledId: string,
     gameId: string,
   ): Promise<LeanGameDocument> => {
-    const lastPlayerKilled: Player = await this.playerRepository.updateById(
-      playerToDie._id,
+    const lastPlayerKilled: LeanPlayerDocument = await this.playerRepository.updateById(
+      playerKilledId,
       {
-        isAlive: false,
         nominatedBy: [],
       },
     );
@@ -107,10 +108,7 @@ export default class PlayerService implements IPlayerService {
     return this.gameRepository.update(gameId, {
       lastPlayerKilled,
       nominatedPlayers: [],
-      $set: {
-        'stages.mafiaAwake': false,
-        'stages.detectiveAwake': true,
-      },
+      stage: DETECTIVE_AWAKE,
     });
   };
 

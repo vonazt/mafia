@@ -94,6 +94,14 @@ export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
   }
 `
 
+export const CONFIRM_ASSASSINATION = gql`
+  mutation confirmAssassination($playerKilledId: String!, $gameId: String!) {
+    confirmAssassination(playerKilledId: $playerKilledId, gameId: $gameId) {
+      stage
+    }
+  }
+`
+
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
     updatedGame(gameId: $gameId) {

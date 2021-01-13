@@ -3,7 +3,7 @@
   import { NOMINATE_PLAYER_FOR_ASSASSINATION } from '../../gql';
   import gameStore from '../../stores/game';
   import playerStore from '../../stores/player';
-  import { MAFIA_AWAKE, MAFIA } from '../../constants';
+  import { MAFIA_AWAKE, MAFIA, DETECTIVE, DETECTIVE_AWAKE } from '../../constants';
 
   const nominatePlayerForAssassination = mutation(
     NOMINATE_PLAYER_FOR_ASSASSINATION,
@@ -32,11 +32,11 @@
       player.isAlive &&
       currentPlayerRole === MAFIA &&
       $gameStore.stage === MAFIA_AWAKE
-      //  ||
-      // (thisPlayer.role === `detective` &&
-      //   thisPlayer.isAlive &&
-      //   stages.detectiveAwake &&
-      //   !investigating) ||
+       ||
+      (currentPlayerRole === DETECTIVE &&
+        player.isAlive &&
+        $gameStore.stage === DETECTIVE_AWAKE) 
+        // &&!investigating ||
       // (stages.day && player.isAlive && thisPlayer.isAlive) ||
       // (!nominating &&
       //   thisPlayer.isAlive &&

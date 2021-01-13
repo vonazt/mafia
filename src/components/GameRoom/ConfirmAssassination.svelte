@@ -1,11 +1,19 @@
 <script>
+  import { mutation } from 'svelte-apollo';
+  import { CONFIRM_ASSASSINATION } from '../../gql';
   import gameStore from '../../stores/game';
   import Button from '../common/Button.svelte';
 
-  const confirmAssassination = (playerToAssassinate) => {
+  const confirmPlayerToAssassinate = mutation(CONFIRM_ASSASSINATION);
+  const confirmAssassination = async (playerToAssassinate) => {
     console.log('will assasinate', playerToAssassinate);
+    await confirmPlayerToAssassinate({
+      variables: {
+        playerKilledId: playerToAssassinate._id,
+        gameId: $gameStore.gameId,
+      },
+    });
   };
-
 </script>
 
 <p>
