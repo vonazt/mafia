@@ -19,6 +19,8 @@ export const JOIN_GAME = gql`
       stage
       players {
         name
+        isAlive
+        _id
       }
     }
   }
@@ -40,6 +42,7 @@ export const ADD_PLAYER = gql`
       players {
         name
         _id
+        isAlive
       }
     }
   }
@@ -51,6 +54,8 @@ export const GAME_SUBSCRIPTION = gql`
       gameId
       players {
         name
+        isAlive
+        _id
       }
       stage
     }
@@ -63,6 +68,7 @@ export const PLAYER_SUBSCRIPTION = gql`
       name
       _id
       role
+      isAlive
     }
   }
 `

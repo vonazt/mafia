@@ -7,8 +7,6 @@
   const startGame = mutation(START_GAME);
 
   const handleStart = async () => {
-    console.log('starting...');
-
     await startGame({ variables: { gameId: $gameStore.gameId } });
   };
 </script>

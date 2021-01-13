@@ -11,7 +11,6 @@
     const {
       data: { joinGame: game },
     } = await joinGame({ variables: { gameId } });
-    console.log('game is', game);
     gameStore.update(() => game);
   };
 </script>

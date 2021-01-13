@@ -1,14 +1,18 @@
 <script>
   import { subscribe } from 'svelte-apollo';
   import { PLAYER_SUBSCRIPTION } from '../../gql';
-  import AddPlayer from './AddPlayer.svelte';
-  import Header from './Header.svelte';
-  import PlayersList from './PlayersList.svelte';
-  import StartGame from './StartGame.svelte';
+  import { INTRO } from '../../constants';
+  import {
+    AddPlayer,
+    Header,
+    PlayersList,
+    StartGame,
+    StageDescription,
+  } from './';
   import playerStore from '../../stores/player';
+  import gameStore from '../../stores/game';
 
   let hasJoined = false;
-  $: console.log('has joined is', hasJoined);
   const joined = () => {
     hasJoined = true;
   };
@@ -18,17 +22,13 @@
 
   const setPlayerId = (id) => (playerId = id);
 
-  $: console.log('player id is', playerId);
-
   $: if (playerId) {
     const subscription = subscribe(PLAYER_SUBSCRIPTION, {
       variables: { _id: playerId },
     });
-    console.log('player sub is', subscription);
     playerSubscription = subscription;
   }
 
-  $: console.log('play sub is', $playerSubscription);
   $: if ($playerSubscription?.data?.updatedPlayer) {
     playerStore.update(() => $playerSubscription.data.updatedPlayer);
   }
@@ -37,8 +37,11 @@
 <div class="flex flex-wrap w-full h-full content-start pt-5">
   <Header />
   <PlayersList />
-  <StartGame />
+  {#if $gameStore.stage === INTRO}
+    <StartGame />
+  {/if}
   {#if !hasJoined}
     <AddPlayer {joined} {setPlayerId} />
   {/if}
+  <StageDescription />
 </div>
