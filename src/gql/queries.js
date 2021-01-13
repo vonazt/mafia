@@ -116,6 +116,18 @@ export const INVESTIGATE_PLAYER = gql`
   }
 `;
 
+export const END_DETECTIVE_TURN = gql`
+  mutation endDetectiveTurn($gameId: String!) {
+    endDetectiveTurn(gameId: $gameId) {
+      stage
+      lastPlayerKilled {
+        _id
+        name
+      }
+    }
+  }
+`
+
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
     updatedGame(gameId: $gameId) {

@@ -1,12 +1,15 @@
 <script>
-  import { query } from 'svelte-apollo';
-  import { INVESTIGATE_PLAYER } from '../../gql';
+  import { mutation, query } from 'svelte-apollo';
+  import { INVESTIGATE_PLAYER, END_DETECTIVE_TURN } from '../../gql';
   import Button from '../common/Button.svelte';
   import detectiveStore from '../../stores/detective';
+  import gameStore from '../../stores/game';
 
   const investigatePlayer = query(INVESTIGATE_PLAYER, {
     variables: { _id: `` },
   });
+
+  const endDetectiveTurn = mutation(END_DETECTIVE_TURN);
 
   let investigationResult;
 
@@ -20,6 +23,10 @@
       isMafia ? `is` : `is not`
     } a member of the mafia`;
   };
+
+  const handleEndDetectiveTurn = async () => {
+    await endDetectiveTurn({ variables: { gameId: $gameStore.gameId } });
+  };
 </script>
 
 {#if $detectiveStore.playerToInvestigate.name && !investigationResult}
@@ -31,4 +38,5 @@
 {/if}
 {#if investigationResult}
   <p>{investigationResult}</p>
+  <Button onClick={handleEndDetectiveTurn}>OK</Button>
 {/if}

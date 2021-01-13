@@ -18,6 +18,7 @@ export const PLAYER_LYNCHED = `playerLynched`
 
 //roles
 export const MAFIA = `mafia`
+export const GUARDIAN_ANGEL = `guardianAngel`
 
 //selectors
 export const ROLE = `role`

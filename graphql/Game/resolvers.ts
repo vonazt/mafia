@@ -59,6 +59,13 @@ export default class GameResolver {
     return updatedGame;
   }
 
+  @Mutation(() => Game)
+  async endDetectiveTurn(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine,) {
+    const updatedGame: LeanGameDocument = await this.gameService.endDetectiveTurn(gameId)
+    await pubsub.publish(UPDATED_GAME, updatedGame)
+    return updatedGame
+  }
+
   @Subscription({
     topics: UPDATED_GAME,
     filter: ({ payload, args }) => payload.gameId === args.gameId,

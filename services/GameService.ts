@@ -5,7 +5,12 @@ import {
 } from '../DomainObjects/Mongoose/GameDocuments';
 import { Player } from '../DomainObjects/Player';
 import { IPlayerRepository } from '../Repositories/PlayerRepository';
-import { MAFIA_AWAKE } from '../constants';
+import {
+  MAFIA_AWAKE,
+  GUARDIAN_ANGEL,
+  GUARDIAN_ANGEL_AWAKE,
+  DAY,
+} from '../constants';
 
 export interface IGameService {
   create: () => Promise<IGameDocument>;
@@ -50,19 +55,29 @@ export default class GameService implements IGameService {
   public endDetectiveTurn = async (
     gameId: string,
   ): Promise<LeanGameDocument> => {
-    const { players, stage }: LeanGameDocument = await this.gameRepository.getById(gameId);
-    const gameHasGuardianAngel: Player = players.find(
-      ({ role }: Player) => role === `guardianAngel`,
+    const game: LeanGameDocument = await this.gameRepository.getById(gameId);
+    const gameHasGuardianAngel: boolean = game.players.some(
+      ({ role }: Player) => role === GUARDIAN_ANGEL,
     );
 
-    // const updatedStages: Stages = gameHasGuardianAngel
-    //   ? { ...stages, detectiveAwake: false, guardianAngelAwake: true }
-    //   : {
-    //       ...stages,
-    //       detectiveAwake: false,
-    //       day: true,
-    //     };
-    return this.gameRepository.update(gameId, { stage: `` });
+    const stage = gameHasGuardianAngel ? GUARDIAN_ANGEL_AWAKE : DAY;
+
+    if (stage === DAY) this.killPlayerAtEndOfNight(game);
+
+    return this.gameRepository.update(gameId, { stage });
+  };
+
+  private killPlayerAtEndOfNight = async ({
+    players,
+    lastPlayerKilled,
+  }: LeanGameDocument): Promise<void> => {
+    const deadPlayer = players.find(
+      ({ _id }) => _id.toString() === lastPlayerKilled._id.toString(),
+    );
+    await this.playerRepository.updateById(deadPlayer._id, {
+      isAlive: false,
+    });
+    return;
   };
 
   // public quit = this.gameRepository.quit;
