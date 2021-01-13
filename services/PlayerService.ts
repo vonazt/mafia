@@ -48,9 +48,6 @@ export default class PlayerService implements IPlayerService {
       ({ name, _id }: Player) => name === player.name && _id.toString() === player._id.toString(),
     );
 
-    console.log('PLAYER ALREADY IN GAME', playerAlreadyInGame);
-    
-
     if (!playerAlreadyInGame) {
       const newPlayer = await this.playerRepository.create({
         name: player.name,
@@ -90,7 +87,9 @@ export default class PlayerService implements IPlayerService {
         nominatedPlayers,
       });
     }
-    return updatedGame;
+    return this.gameRepository.update(gameId, {
+      nominatedPlayers: [],
+    });
   };
 
   public confirmAssassination = async (

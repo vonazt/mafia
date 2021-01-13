@@ -14,10 +14,10 @@
       nominateForAssassination(playerToNominate),
   };
 
-  let playerToNominate = {}
+  let playerToNominate = {};
 
   const nominateForAssassination = async (player) => {
-    playerToNominate = {...player}
+    playerToNominate = { ...player };
     await nominatePlayerForAssassination({
       variables: {
         playerId: player._id,
@@ -62,6 +62,12 @@
           }} />
       {/if}
       <li>{player.name}</li>
+      {#if player.nominatedBy.length && $playerStore.role === MAFIA && $gameStore.stage === MAFIA_AWAKE}
+        <span>Nominated by
+          {#each player.nominatedBy as nominatingPlayer}
+            {nominatingPlayer.name}
+          {/each}</span>
+      {/if}
     {/each}
   </ol>
 </div>

@@ -24,6 +24,10 @@ export const JOIN_GAME = gql`
         name
         isAlive
         _id
+        nominatedBy {
+          name
+          _id
+        }
       }
       nominatedPlayers {
         name
@@ -62,6 +66,10 @@ export const REJOIN_PLAYER= gql`
         name
         _id
         isAlive
+        nominatedBy {
+          name
+          _id
+        }
       }
     }
   }
@@ -71,6 +79,13 @@ export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
   mutation nominatePlayerForAssassination($playerId: String!, $mafiaHitmanId: String!, $gameId: String!) {
     nominatePlayerForAssassination(playerId: $playerId, mafiaHitmanId: $mafiaHitmanId, gameId: $gameId) {
       stage
+      players {
+        nominatedBy {
+          name
+          _id
+          role
+        }
+      }
       nominatedPlayers {
         name
         _id
@@ -87,6 +102,11 @@ export const GAME_SUBSCRIPTION = gql`
         name
         isAlive
         _id
+        nominatedBy {
+          name
+          _id
+          role
+        }
       }
       stage
       nominatedPlayers {

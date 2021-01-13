@@ -10,7 +10,7 @@ export class Player {
   role?: string;
   @Field()
   isAlive?: boolean;
-  @Field(() => Player)
+  @Field(() => [Player], { nullable: `items` })
   nominatedBy?: Player[];
   @Field()
   connected?: boolean;
