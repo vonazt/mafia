@@ -12,6 +12,7 @@
     GUARDIAN_ANGEL,
     GUARDIAN_ANGEL_AWAKE,
     DETECTIVE_AWAKE,
+    DAY,
   } from '../../constants';
 
   const nominatePlayerForAssassination = mutation(
@@ -54,9 +55,9 @@
           !detectiveIsInvestigating) ||
         (currentPlayerRole === GUARDIAN_ANGEL &&
           $gameStore.stage === GUARDIAN_ANGEL_AWAKE &&
-          !guardianAngelProtecting))
+          !guardianAngelProtecting) ||
+        ($gameStore.stage === DAY && player.isAlive && $playerStore.isAlive))
       // ||
-      // (stages.day && player.isAlive && thisPlayer.isAlive) ||
       // (!nominating &&
       //   thisPlayer.isAlive &&
       //   stages.twoNominations &&

@@ -14,7 +14,7 @@ import {
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
 import { PlayerInput, Player } from './types';
 import { Game } from '../Game/types';
-import { PLAYER_SERVICE, UPDATED_GAME, PLAYER_UPDATE } from '../../constants';
+import { PLAYER_SERVICE, UPDATED_GAME, PLAYER_UPDATE, ID, GAME_ID, PLAYER, PLAYER_ID, MAFIA_HITMAN_ID, PLAYER_KILLED_ID } from '../../constants';
 
 @Service()
 @Resolver(Player)
@@ -23,14 +23,14 @@ export default class PlayerResolver {
     @Inject(PLAYER_SERVICE) private readonly playerService: IPlayerService,
   ) {}
   @Query(() => Boolean)
-  async investigatePlayer(@Arg(`_id`) _id: string) {
+  async investigatePlayer(@Arg(ID) _id: string) {
     return this.playerService.investigate(_id);
   }
 
   @Mutation(() => Game)
   async addPlayer(
-    @Arg('gameId') gameId: string,
-    @Arg('player') player: PlayerInput,
+    @Arg(GAME_ID) gameId: string,
+    @Arg(PLAYER) player: PlayerInput,
     @PubSub() pubsub: PubSubEngine,
   ) {
     const updatedGame: LeanGameDocument = await this.playerService.add(
@@ -44,8 +44,8 @@ export default class PlayerResolver {
 
   @Mutation(() => Game)
   async rejoinPlayer(
-    @Arg('gameId') gameId: string,
-    @Arg('player') player: PlayerInput,
+    @Arg(GAME_ID) gameId: string,
+    @Arg(PLAYER) player: PlayerInput,
     @PubSub() pubsub: PubSubEngine,
   ) {
     const updatedGame: LeanGameDocument = await this.playerService.add(
@@ -61,9 +61,9 @@ export default class PlayerResolver {
 
   @Mutation(() => Game)
   async nominatePlayerForAssassination(
-    @Arg('playerId') playerId: string,
-    @Arg(`mafiaHitmanId`) mafiaHitmanId: string,
-    @Arg(`gameId`) gameId: string,
+    @Arg(PLAYER_ID) playerId: string,
+    @Arg(MAFIA_HITMAN_ID) mafiaHitmanId: string,
+    @Arg(GAME_ID) gameId: string,
     @PubSub() pubsub: PubSubEngine,
   ) {
     const updatedGame: LeanGameDocument = await this.playerService.nominateForAssassination(
@@ -77,8 +77,8 @@ export default class PlayerResolver {
 
   @Mutation(() => Game)
   async confirmAssassination(
-    @Arg(`playerKilledId`) playerKilledId: string,
-    @Arg(`gameId`) gameId: string,
+    @Arg(PLAYER_KILLED_ID) playerKilledId: string,
+    @Arg(GAME_ID) gameId: string,
     @PubSub() pubsub: PubSubEngine,
   ) {
     const updatedGame: LeanGameDocument = await this.playerService.confirmAssassination(
@@ -91,8 +91,8 @@ export default class PlayerResolver {
 
   @Mutation(() => Boolean)
   async protectPlayer(
-    @Arg(`_id`) _id: string,
-    @Arg(`gameId`) gameId: string,
+    @Arg(ID) _id: string,
+    @Arg(GAME_ID) gameId: string,
   ) {
     return this.playerService.protect(_id, gameId);
   }
@@ -104,7 +104,7 @@ export default class PlayerResolver {
   })
   updatedPlayer(
     @Root() updatedPlayer: Player,
-    @Arg(`_id`) _id: string,
+    @Arg(ID) _id: string,
   ): Player {
     console.log('UPDATING PLAYERS', updatedPlayer.name);
 

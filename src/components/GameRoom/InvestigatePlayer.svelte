@@ -24,9 +24,8 @@
     } a member of the mafia`;
   };
 
-  const handleEndDetectiveTurn = async () => {
-    await endDetectiveTurn({ variables: { gameId: $gameStore.gameId } });
-  };
+  const handleEndDetectiveTurn = async () =>
+    endDetectiveTurn({ variables: { gameId: $gameStore.gameId } });
 </script>
 
 {#if $detectiveStore.playerToInvestigate.name && !investigationResult}

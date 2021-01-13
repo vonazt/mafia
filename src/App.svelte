@@ -24,7 +24,7 @@
       ...$gameSubscription.data.updatedGame,
     }));
   }
-
+  
 </script>
 
 <main>

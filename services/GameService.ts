@@ -17,6 +17,7 @@ export interface IGameService {
   join: (gameId: string) => Promise<LeanGameDocument>;
   start: (gameId: string) => Promise<LeanGameDocument>;
   endDetectiveTurn: (gameId: string) => Promise<LeanGameDocument>;
+  endGuardianAngelTurn: (gameId: string) => Promise<LeanGameDocument>;
   // quit: (socketId: string) => Promise<LeanGameDocument>;
 }
 
@@ -65,6 +66,14 @@ export default class GameService implements IGameService {
     if (stage === DAY) this.killPlayerAtEndOfNight(game);
 
     return this.gameRepository.update(gameId, { stage });
+  };
+
+  public endGuardianAngelTurn = async (
+    gameId: string,
+  ): Promise<LeanGameDocument> => {
+    const game: LeanGameDocument = await this.gameRepository.getById(gameId);
+    if (game.lastPlayerKilled) await this.killPlayerAtEndOfNight(game);
+    return this.gameRepository.update(gameId, { stage: DAY });
   };
 
   private killPlayerAtEndOfNight = async ({

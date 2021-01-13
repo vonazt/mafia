@@ -32,6 +32,10 @@ export const JOIN_GAME = gql`
       nominatedPlayers {
         name
       }
+      lastPlayerKilled {
+        name
+        _id
+      }
     }
   }
 `;
@@ -53,6 +57,10 @@ export const ADD_PLAYER = gql`
         name
         _id
         isAlive
+      }
+      lastPlayerKilled {
+        name
+        _id
       }
     }
   }
@@ -91,7 +99,6 @@ export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
         nominatedBy {
           name
           _id
-          role
         }
       }
       nominatedPlayers {
@@ -126,13 +133,26 @@ export const END_DETECTIVE_TURN = gql`
       }
     }
   }
-`
+`;
 
 export const PROTECT_PLAYER = gql`
   mutation protectPlayer($_id: String!, $gameId: String!) {
     protectPlayer(_id: $_id, gameId: $gameId)
   }
-`
+`;
+
+export const END_GUARDIAN_ANGEL_TURN = gql`
+  mutation endGuardianAngelTurn($gameId: String!) {
+    endGuardianAngelTurn(gameId: $gameId) {
+      stage
+      gameId
+      lastPlayerKilled {
+        _id
+        name
+      }
+    }
+  }
+`;
 
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
@@ -150,6 +170,10 @@ export const GAME_SUBSCRIPTION = gql`
       }
       stage
       nominatedPlayers {
+        name
+        _id
+      }
+      lastPlayerKilled {
         name
         _id
       }

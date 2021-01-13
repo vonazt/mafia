@@ -13,7 +13,7 @@ import {
 import { Game } from './types';
 import { IGameService } from '../../Services/GameService';
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
-import { GAME_SERVICE, PLAYER_UPDATE, UPDATED_GAME } from '../../constants';
+import { GAME_SERVICE, PLAYER_UPDATE, UPDATED_GAME, GAME_ID } from '../../constants';
 
 @Service()
 @Resolver(Game)
@@ -35,7 +35,7 @@ export default class GameResolver {
 
   @Mutation(() => Game)
   async joinGame(
-    @Arg(`gameId`) gameId: string,
+    @Arg(GAME_ID) gameId: string,
     @PubSub() pubsub: PubSubEngine,
   ) {
     const updatedGame: LeanGameDocument = await this.gameService.join(gameId);
@@ -45,7 +45,7 @@ export default class GameResolver {
 
   @Mutation(() => Game)
   async startGame(
-    @Arg(`gameId`) gameId: string,
+    @Arg(GAME_ID) gameId: string,
     @PubSub() pubsub: PubSubEngine,
   ) {
     const updatedGame: LeanGameDocument = await this.gameService.start(gameId);
@@ -60,8 +60,16 @@ export default class GameResolver {
   }
 
   @Mutation(() => Game)
-  async endDetectiveTurn(@Arg(`gameId`) gameId: string, @PubSub() pubsub: PubSubEngine,) {
+  async endDetectiveTurn(@Arg(GAME_ID) gameId: string, @PubSub() pubsub: PubSubEngine,) {
     const updatedGame: LeanGameDocument = await this.gameService.endDetectiveTurn(gameId)
+    await pubsub.publish(UPDATED_GAME, updatedGame)
+    return updatedGame
+  }
+
+  @Mutation(() => Game)
+  async endGuardianAngelTurn(@Arg(GAME_ID) gameId: string, @PubSub() pubsub: PubSubEngine) {
+    const updatedGame: LeanGameDocument = await this.gameService.endGuardianAngelTurn(gameId)
+
     await pubsub.publish(UPDATED_GAME, updatedGame)
     return updatedGame
   }
@@ -72,7 +80,7 @@ export default class GameResolver {
   })
   updatedGame(
     @Root() updatedGamePayload: Game,
-    @Arg(`gameId`) gameId: string,
+    @Arg(GAME_ID) gameId: string,
   ): Game | null {
     return { ...updatedGamePayload };
   }

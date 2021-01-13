@@ -6,6 +6,14 @@ export const PLAYER_UPDATE = `PLAYER_UPDATE`
 export const GAME_SERVICE = `GAME_SERVICE`
 export const PLAYER_SERVICE = `PLAYER_SERVICE`
 
+//args
+export const GAME_ID = `gameId`
+export const ID = `_id`
+export const PLAYER = `player`
+export const PLAYER_ID = `playerId`
+export const MAFIA_HITMAN_ID = `mafiaHitmanId`
+export const PLAYER_KILLED_ID = `playerKilledId`
+
 //stages
 export const INTRO = `intro`
 export const MAFIA_AWAKE = `mafiaAwake`

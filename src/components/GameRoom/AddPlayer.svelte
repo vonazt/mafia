@@ -13,7 +13,6 @@
 
   const handleAddPlayer = async () => {
     const savedPlayer = JSON.parse(window.sessionStorage.getItem(`player`));
-    console.log('saved player is', savedPlayer);
     const playerToAdd =
       savedPlayer && savedPlayer.name === playerName
         ? { name: savedPlayer.name, _id: savedPlayer._id }

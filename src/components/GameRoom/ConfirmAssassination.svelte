@@ -6,7 +6,6 @@
 
   const confirmPlayerToAssassinate = mutation(CONFIRM_ASSASSINATION);
   const confirmAssassination = async (playerToAssassinate) => {
-    console.log('will assasinate', playerToAssassinate);
     await confirmPlayerToAssassinate({
       variables: {
         playerKilledId: playerToAssassinate._id,
