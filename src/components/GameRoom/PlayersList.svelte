@@ -14,10 +14,13 @@
       nominateForAssassination(playerToNominate),
   };
 
-  const nominateForAssassination = async (playerToNominate) => {
+  let playerToNominate = {}
+
+  const nominateForAssassination = async (player) => {
+    playerToNominate = {...player}
     await nominatePlayerForAssassination({
       variables: {
-        playerId: playerToNominate._id,
+        playerId: player._id,
         mafiaHitmanId: $playerStore._id,
         gameId: $gameStore.gameId,
       },
@@ -52,6 +55,7 @@
       {#if canNominate(player, $playerStore.role)}
         <input
           type="radio"
+          bind:group={playerToNominate}
           value={player}
           on:click={() => {
             handleNominate[$gameStore.stage](player);
