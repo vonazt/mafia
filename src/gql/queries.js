@@ -8,6 +8,9 @@ export const CREATE_GAME = gql`
       players {
         name
       }
+      nominatedPlayers {
+        name
+      }
     }
   }
 `;
@@ -21,6 +24,9 @@ export const JOIN_GAME = gql`
         name
         isAlive
         _id
+      }
+      nominatedPlayers {
+        name
       }
     }
   }
@@ -48,6 +54,18 @@ export const ADD_PLAYER = gql`
   }
 `
 
+export const NOMINATE_PLAYER_FOR_ASSASSINATION = gql`
+  mutation nominatePlayerForAssassination($playerId: String!, $mafiaHitmanId: String!, $gameId: String!) {
+    nominatePlayerForAssassination(playerId: $playerId, mafiaHitmanId: $mafiaHitmanId, gameId: $gameId) {
+      stage
+      nominatedPlayers {
+        name
+        _id
+      }
+    }
+  }
+`
+
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {
     updatedGame(gameId: $gameId) {
@@ -58,6 +76,10 @@ export const GAME_SUBSCRIPTION = gql`
         _id
       }
       stage
+      nominatedPlayers {
+        name
+        _id
+      }
     }
   }
 `;

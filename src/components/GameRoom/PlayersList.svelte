@@ -1,15 +1,27 @@
 <script>
+  import { mutation } from 'svelte-apollo';
+  import { NOMINATE_PLAYER_FOR_ASSASSINATION } from '../../gql';
   import gameStore from '../../stores/game';
   import playerStore from '../../stores/player';
   import { MAFIA_AWAKE, MAFIA } from '../../constants';
 
+  const nominatePlayerForAssassination = mutation(
+    NOMINATE_PLAYER_FOR_ASSASSINATION,
+  );
+
   const handleNominate = {
-    [MAFIA_AWAKE]: (playerToNominate) => nominateForAssassination(playerToNominate),
+    [MAFIA_AWAKE]: (playerToNominate) =>
+      nominateForAssassination(playerToNominate),
   };
 
-  const nominateForAssassination = (playerToNominate) => {
-    console.log('player to nominate is', playerToNominate);
-    console.log('nominating player is', $playerStore);
+  const nominateForAssassination = async (playerToNominate) => {
+    await nominatePlayerForAssassination({
+      variables: {
+        playerId: playerToNominate._id,
+        mafiaHitmanId: $playerStore._id,
+        gameId: $gameStore.gameId,
+      },
+    });
   };
 
   const canNominate = (player, currentPlayerRole) => {

@@ -9,9 +9,9 @@ import { IGameRepository } from '../Repositories/GameRepository';
 
 export interface IPlayerService {
   add: (gameId: string, player: Player) => Promise<LeanGameDocument>;
-  assassinate: (
-    player: Player,
-    mafiaHitman: Player,
+  nominateForAssassination: (
+    playerId: string,
+    mafiaHitmanId: string,
     gameId: string,
   ) => Promise<LeanGameDocument>;
   confirmAssassination: (
@@ -62,12 +62,12 @@ export default class PlayerService implements IPlayerService {
     return this.gameRepository.getById(gameId);
   };
 
-  public assassinate = async (
-    player: Player,
-    mafiaHitman: Player,
+  public nominateForAssassination = async (
+    playerId: string,
+    mafiaHitmanId: string,
     gameId: string,
   ): Promise<LeanGameDocument> => {
-    await this.playerRepository.updateNominations(player, mafiaHitman);
+    await this.playerRepository.updateNominations(playerId, mafiaHitmanId);
     const updatedGame: LeanGameDocument = await this.gameRepository.getById(
       gameId,
     );

@@ -1,5 +1,10 @@
 import { writable } from 'svelte/store';
 
-const gameStore = writable({});
+const gameStore = writable({
+  gameId: ``,
+  stage: ``,
+  players: [],
+  nominatedPlayers: [],
+});
 
 export default gameStore;

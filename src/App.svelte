@@ -2,7 +2,6 @@
   import client from './gql/client';
   import { setClient, subscribe } from 'svelte-apollo';
   import gameStore from './stores/game';
-  import playerStore from './stores/player';
   import CreateGame from './components/CreateGame.svelte';
   import JoinGame from './components/JoinGame.svelte';
   import Container from './components/common/Container.svelte';
@@ -20,10 +19,12 @@
   }
 
   $: if ($gameSubscription?.data?.updatedGame) {
-    gameStore.update(() => $gameSubscription.data.updatedGame);
+    gameStore.update((game) => ({
+      ...game,
+      ...$gameSubscription.data.updatedGame,
+    }));
   }
 
-  $: console.log('player store is', playerStore);
 </script>
 
 <main>

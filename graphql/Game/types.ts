@@ -11,6 +11,6 @@ export class Game {
   stage: string;
   @Field(() => Player)
   lastPlayerKilled: Player;
-  @Field(() => Player)
+  @Field(() => [Player], { nullable: `items` })
   nominatedPlayers: Player[];
 }

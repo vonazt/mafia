@@ -36,6 +36,23 @@ export default class PlayerResolver {
       gameId,
       player,
     );
+
+    await pubsub.publish(UPDATED_GAME, updatedGame);
+    return updatedGame;
+  }
+
+  @Mutation(() => Game)
+  async nominatePlayerForAssassination(
+    @Arg('playerId') playerId: string,
+    @Arg(`mafiaHitmanId`) mafiaHitmanId: string,
+    @Arg(`gameId`) gameId: string,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
+    const updatedGame: LeanGameDocument = await this.playerService.nominateForAssassination(
+      playerId,
+      mafiaHitmanId,
+      gameId,
+    );
     await pubsub.publish(UPDATED_GAME, updatedGame);
     return updatedGame;
   }

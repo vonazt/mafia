@@ -10,8 +10,8 @@ export interface IPlayerRepository {
   create: (player: Player) => Promise<IPlayerDocument>;
   updateById: (_id: Object, operation: {}) => Promise<LeanPlayerDocument>;
   updateNominations: (
-    playerToNominate: Player,
-    nominatedBy: Player,
+    playerToNominateId: string,
+    nominatedById: string,
   ) => Promise<LeanPlayerDocument[]>;
   reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
   disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
@@ -54,16 +54,16 @@ export default class PlayerRepository implements IPlayerRepository {
   };
 
   public updateNominations = async (
-    playerToNominate: Player,
-    nominatedBy: Player,
+    playerToNominateId: string,
+    nominatedById: string,
   ): Promise<LeanPlayerDocument[]> =>
     Promise.all([
       this.updatePlayer(
-        { nominatedBy: nominatedBy._id },
-        { $pull: { nominatedBy: nominatedBy._id } },
+        { nominatedBy: nominatedById },
+        { $pull: { nominatedBy: nominatedById } },
       ),
-      this.updateById(playerToNominate._id, {
-        $addToSet: { nominatedBy: nominatedBy._id },
+      this.updateById(playerToNominateId, {
+        $addToSet: { nominatedBy: nominatedById },
       }),
     ]);
 

@@ -7,7 +7,6 @@
   let gameId = '';
   const joinGame = mutation(JOIN_GAME);
   const handleJoin = async () => {
-    console.log('game id is', gameId);
     const {
       data: { joinGame: game },
     } = await joinGame({ variables: { gameId } });
