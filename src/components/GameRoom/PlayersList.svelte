@@ -1,6 +1,9 @@
 <script>
   import { mutation } from 'svelte-apollo';
-  import { NOMINATE_PLAYER_FOR_ASSASSINATION } from '../../gql';
+  import {
+    NOMINATE_PLAYER_FOR_ASSASSINATION,
+    NOMINATE_PLAYER,
+  } from '../../gql';
   import gameStore from '../../stores/game';
   import playerStore from '../../stores/player';
   import detectiveStore from '../../stores/detective';
@@ -19,6 +22,8 @@
     NOMINATE_PLAYER_FOR_ASSASSINATION,
   );
 
+  const nominatePlayer = mutation(NOMINATE_PLAYER);
+
   const handleNominate = {
     [MAFIA_AWAKE]: (playerToNominate) =>
       nominateForAssassination(playerToNominate),
@@ -26,6 +31,18 @@
       detectiveStore.update((store) => ({ ...store, playerToInvestigate })),
     [GUARDIAN_ANGEL_AWAKE]: (playerToProtect) =>
       guardianAngelStore.update((store) => ({ ...store, playerToProtect })),
+    [DAY]: (playerToNominate) => handleNominatePlayer(playerToNominate),
+  };
+
+  const handleNominatePlayer = async (player) => {
+    playerToNominate = { ...player };
+    await nominatePlayer({
+      variables: {
+        playerToNominateId: player._id,
+        nominatedById: $playerStore._id,
+        gameId: $gameStore.gameId,
+      },
+    });
   };
 
   let playerToNominate = {};
@@ -64,6 +81,13 @@
       //   nominatedPlayers.some(({ _id }) => _id === player._id))
     );
   };
+
+  const getNominatedBy = (nominatedBy) => {
+    const nominators = nominatedBy
+      .filter(({ _id }) => _id !== $playerStore._id)
+      .map(({ name }) => name);
+    return nominators.length ? `Nominated by ${nominators.join(`, `)}` : ``;
+  };
 </script>
 
 <div class="w-3/12 text-right">
@@ -81,12 +105,9 @@
             handleNominate[$gameStore.stage](player);
           }} />
       {/if}
-      <li>{player.name}</li>
-      {#if player.nominatedBy.length && $playerStore.role === MAFIA && $gameStore.stage === MAFIA_AWAKE}
-        <span>Nominated by
-          {#each player.nominatedBy as nominatingPlayer}
-            {nominatingPlayer.name}
-          {/each}</span>
+      <li class={`${!player.isAlive ? `line-through` : ``}`}>{player.name}</li>
+      {#if player.nominatedBy.length && (($playerStore.role === MAFIA && $gameStore.stage === MAFIA_AWAKE) || $gameStore.stage === DAY)}
+        {getNominatedBy(player.nominatedBy)}
       {/if}
     {/each}
   </ol>

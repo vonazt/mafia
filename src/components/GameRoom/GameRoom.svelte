@@ -52,10 +52,8 @@
   }
 
   $: if ($playerSubscription?.data?.updatedPlayer) {
-    playerStore.update(() => $playerSubscription.data.updatedPlayer);
+    playerStore.update((store) => ({...store, ...$playerSubscription.data.updatedPlayer}));
   }
-
-  //TODO: WHEN DETECTIVE TURN IS OVER KILL PLAYER BASED ON LAST PLAYER KILLED
 </script>
 
 <div class="flex flex-wrap w-full h-full content-start pt-5">

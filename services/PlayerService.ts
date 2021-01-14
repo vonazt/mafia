@@ -6,7 +6,7 @@ import {
 } from '../DomainObjects/Player';
 import { IPlayerRepository } from '../Repositories/PlayerRepository';
 import { IGameRepository } from '../Repositories/GameRepository';
-import { DETECTIVE_AWAKE, MAFIA, ROLE } from '../constants';
+import { DETECTIVE_AWAKE, MAFIA, ROLE, TWO_NOMINATIONS } from '../constants';
 
 export interface IPlayerService {
   add: (gameId: string, player: Player) => Promise<LeanGameDocument>;
@@ -22,8 +22,8 @@ export interface IPlayerService {
   investigate: (_id: string) => Promise<boolean>;
   protect: (_id: string, gameId: string) => Promise<boolean>;
   nominate: (
-    playerToNominate: Player,
-    nominatedBy: Player,
+    playerToNominateId: string,
+    nominatedById: string,
     gameId: string,
   ) => Promise<LeanGameDocument>;
   lynch: (
@@ -131,13 +131,14 @@ export default class PlayerService implements IPlayerService {
   };
 
   public nominate = async (
-    playerToNominate: Player,
-    nominatedBy: Player,
+    playerToNominateId: string,
+    nominatedById: string,
     gameId: string,
   ): Promise<LeanGameDocument> => {
+    
     await this.playerRepository.updateNominations(
-      playerToNominate,
-      nominatedBy,
+      playerToNominateId,
+      nominatedById,
     );
     const updatedGame: LeanGameDocument = await this.gameRepository.getById(
       gameId,
@@ -148,12 +149,17 @@ export default class PlayerService implements IPlayerService {
     }: NominatedAndAliveAndMafiaPlayers = this.getNominatedAndAliveAndMafiaPlayers(
       updatedGame.players,
     );
-    //TODO: ACCOUNT FOR PLAYER NOMINATING THEMSELVES
 
     console.log(
-      'TWO PLAYERS NOMINTED',
-      this.twoPlayersNominated(nominatedPlayers, alivePlayers),
+      'NOMINATED PLAYERS ARE',
+      nominatedPlayers.map(
+        ({ name, nominatedBy }) =>
+          `${name}, nominated by ${nominatedBy.map(({ name }) => name)}`,
+      ),
     );
+
+    //TODO: ACCOUNT FOR PLAYER NOMINATING THEMSELVES
+
     if (this.twoPlayersNominated(nominatedPlayers, alivePlayers)) {
       await Promise.all(
         updatedGame.players.map((player: Player) =>
@@ -162,7 +168,7 @@ export default class PlayerService implements IPlayerService {
       );
       return this.gameRepository.update(gameId, {
         nominatedPlayers,
-        $set: { 'stages.day': false, 'stages.twoNominations': true },
+        stage: TWO_NOMINATIONS,
       });
     }
     return this.gameRepository.update(gameId, { nominatedPlayers });

@@ -63,7 +63,7 @@ export default class GameService implements IGameService {
 
     const stage = gameHasGuardianAngel ? GUARDIAN_ANGEL_AWAKE : DAY;
 
-    if (stage === DAY) this.killPlayerAtEndOfNight(game);
+    if (stage === DAY) await this.killPlayerAtEndOfNight(game);
 
     return this.gameRepository.update(gameId, { stage });
   };

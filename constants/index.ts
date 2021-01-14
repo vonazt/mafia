@@ -13,6 +13,8 @@ export const PLAYER = `player`
 export const PLAYER_ID = `playerId`
 export const MAFIA_HITMAN_ID = `mafiaHitmanId`
 export const PLAYER_KILLED_ID = `playerKilledId`
+export const PLAYER_TO_NOMINATE_ID = `playerToNominateId`
+export const NOMINATED_BY_ID = `nominatedById`
 
 //stages
 export const INTRO = `intro`

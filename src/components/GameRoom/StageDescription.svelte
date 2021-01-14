@@ -6,12 +6,13 @@
     DETECTIVE_AWAKE,
     GUARDIAN_ANGEL_AWAKE,
     DAY,
+    TWO_NOMINATIONS,
   } from '../../constants';
 
   const getDayDescription = (lastPlayerKilled) =>
     lastPlayerKilled
-      ? `${lastPlayerKilled.name} has been tragically murdered in their sleep. The townsfolk must gather to find the murderers in their midst`
-      : `A guardian angel saved someone from certain death last night. Nonetheless, the would-be killers are still at large. The townsfolk gather and try to find the killers in their midst...`;
+      ? `${lastPlayerKilled.name} has been tragically murdered in their sleep. The townsfolk gather to find the killers in their midst`
+      : `A guardian angel saved someone from certain death last night. Nonetheless, the would-be killers are still at large. The townsfolk gather to try to find the killers in their midst...`;
 
   const stageDescriptions = {
     [INTRO]: () => ``,
@@ -22,6 +23,10 @@
     [GUARDIAN_ANGEL_AWAKE]: () =>
       `The detective has learnt something tonight. They return to the police station. The guardian angel awakes and chooses a person to save from death.`,
     [DAY]: (game) => getDayDescription(game.lastPlayerKilled),
+    [TWO_NOMINATIONS]: (game) => `${game.nominatedPlayers
+      .map(({ name }) => name)
+      .join(` and `)}
+          have been accused by the townsfolk. One of them must die. Pick one.`,
   };
 </script>
 

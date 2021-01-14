@@ -12,3 +12,4 @@ export const PLAYER_LYNCHED = `playerLynched`
 export const MAFIA = `mafia`
 export const DETECTIVE = `detective`
 export const GUARDIAN_ANGEL = `guardianAngel`
+export const CIVILIAN = `civilian`

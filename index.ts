@@ -10,7 +10,7 @@ import { buildSchema } from 'type-graphql';
 import { gameResolvers, playerResolvers } from './graphql/';
 import GameHandlerFactory from './Factories/GameHandlerFactory';
 import PlayerHandlerFactory from './Factories/PlayerHandlerFactory';
-import {GAME_SERVICE, PLAYER_SERVICE} from './constants'
+import { GAME_SERVICE, PLAYER_SERVICE } from './constants';
 
 const init = async () => {
   dotenv.config();
@@ -25,8 +25,9 @@ const init = async () => {
   });
 
   Container.set({
-    id: PLAYER_SERVICE, factory: () => PlayerHandlerFactory.build()
-  })
+    id: PLAYER_SERVICE,
+    factory: () => PlayerHandlerFactory.build(),
+  });
 
   const schema = await buildSchema({
     resolvers: [gameResolvers, playerResolvers],
@@ -53,7 +54,13 @@ const init = async () => {
   });
 
   httpServer.listen(process.env.PORT, () => {
-    console.log(`Server is up at port ${process.env.PORT}`);
+    console.log(
+      `Server is up at port ${process.env.PORT}, started at ${new Date().getHours()}:${
+        new Date().getMinutes() < 10
+          ? `0${new Date().getMinutes()}`
+          : new Date().getMinutes()
+      }`,
+    );
   });
 };
 

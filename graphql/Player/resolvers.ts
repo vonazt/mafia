@@ -14,7 +14,19 @@ import {
 import { LeanGameDocument } from '../../DomainObjects/Mongoose/GameDocuments';
 import { PlayerInput, Player } from './types';
 import { Game } from '../Game/types';
-import { PLAYER_SERVICE, UPDATED_GAME, PLAYER_UPDATE, ID, GAME_ID, PLAYER, PLAYER_ID, MAFIA_HITMAN_ID, PLAYER_KILLED_ID } from '../../constants';
+import {
+  PLAYER_SERVICE,
+  UPDATED_GAME,
+  PLAYER_UPDATE,
+  ID,
+  GAME_ID,
+  PLAYER,
+  PLAYER_ID,
+  MAFIA_HITMAN_ID,
+  PLAYER_KILLED_ID,
+  PLAYER_TO_NOMINATE_ID,
+  NOMINATED_BY_ID,
+} from '../../constants';
 
 @Service()
 @Resolver(Player)
@@ -90,11 +102,24 @@ export default class PlayerResolver {
   }
 
   @Mutation(() => Boolean)
-  async protectPlayer(
-    @Arg(ID) _id: string,
-    @Arg(GAME_ID) gameId: string,
-  ) {
+  async protectPlayer(@Arg(ID) _id: string, @Arg(GAME_ID) gameId: string) {
     return this.playerService.protect(_id, gameId);
+  }
+
+  @Mutation(() => Game)
+  async nominatePlayer(
+    @Arg(PLAYER_TO_NOMINATE_ID) playerToNominateId: string,
+    @Arg(NOMINATED_BY_ID) nominatedById: string,
+    @Arg(GAME_ID) gameId: string,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
+    const updatedGame: LeanGameDocument = await this.playerService.nominate(
+      playerToNominateId,
+      nominatedById,
+      gameId,
+    );
+    await pubsub.publish(UPDATED_GAME, updatedGame);
+    return updatedGame;
   }
 
   @Subscription({
@@ -102,10 +127,7 @@ export default class PlayerResolver {
     filter: ({ payload, args }) =>
       payload._id.toString() === args._id.toString(),
   })
-  updatedPlayer(
-    @Root() updatedPlayer: Player,
-    @Arg(ID) _id: string,
-  ): Player {
+  updatedPlayer(@Root() updatedPlayer: Player, @Arg(ID) _id: string): Player {
     console.log('UPDATING PLAYERS', updatedPlayer.name);
 
     return { ...updatedPlayer };
