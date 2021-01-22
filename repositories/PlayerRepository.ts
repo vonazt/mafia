@@ -13,8 +13,6 @@ export interface IPlayerRepository {
     playerToNominateId: string,
     nominatedById: string,
   ) => Promise<LeanPlayerDocument[]>;
-  reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
-  disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
 
 export default class PlayerRepository implements IPlayerRepository {
@@ -35,23 +33,6 @@ export default class PlayerRepository implements IPlayerRepository {
       new: true,
       lean: true,
     });
-
-  public reconnect = async (
-    player: Player,
-    socketId: string,
-  ): Promise<LeanPlayerDocument> => this.updateById(player._id, { socketId });
-
-  public disconnectFromGame = async (
-    socketId: string,
-  ): Promise<LeanPlayerDocument> => {
-    console.log('disconnecting socket id is', socketId);
-    const updatedPlayer = await this.updatePlayer(
-      { socketId },
-      { connected: false, socketId: null },
-    );
-    console.log('updated player is', updatedPlayer);
-    return updatedPlayer;
-  };
 
   public updateNominations = async (
     playerToNominateId: string,

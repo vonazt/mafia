@@ -24,7 +24,6 @@
       ...$gameSubscription.data.updatedGame,
     }));
   }
-  $: console.log('GAME STORE IN APP IS', $gameStore)
 </script>
 
 <main>

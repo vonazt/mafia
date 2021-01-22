@@ -6,7 +6,14 @@ import {
 } from '../DomainObjects/Player';
 import { IPlayerRepository } from '../Repositories/PlayerRepository';
 import { IGameRepository } from '../Repositories/GameRepository';
-import { DETECTIVE_AWAKE, MAFIA, ROLE, TWO_NOMINATIONS } from '../constants';
+import {
+  DETECTIVE_AWAKE,
+  MAFIA,
+  PLAYER_LYNCHED,
+  ROLE,
+  TIE,
+  TWO_NOMINATIONS,
+} from '../constants';
 
 export interface IPlayerService {
   add: (gameId: string, player: Player) => Promise<LeanGameDocument>;
@@ -27,12 +34,10 @@ export interface IPlayerService {
     gameId: string,
   ) => Promise<LeanGameDocument>;
   lynch: (
-    playerToLynch: Player,
-    nominatedBy: Player,
+    playerToLynchId: string,
+    nominatedById: string,
     gameId: string,
   ) => Promise<LeanGameDocument>;
-  reconnect: (player: Player, socketId: string) => Promise<LeanPlayerDocument>;
-  disconnectFromGame: (socketId: string) => Promise<LeanPlayerDocument>;
 }
 export default class PlayerService implements IPlayerService {
   constructor(
@@ -135,7 +140,6 @@ export default class PlayerService implements IPlayerService {
     nominatedById: string,
     gameId: string,
   ): Promise<LeanGameDocument> => {
-    
     await this.playerRepository.updateNominations(
       playerToNominateId,
       nominatedById,
@@ -175,11 +179,14 @@ export default class PlayerService implements IPlayerService {
   };
 
   public lynch = async (
-    playerToLynch: Player,
-    nominatedBy: Player,
+    playerToLynchId: string,
+    nominatedById: string,
     gameId: string,
   ): Promise<LeanGameDocument> => {
-    await this.playerRepository.updateNominations(playerToLynch, nominatedBy);
+    await this.playerRepository.updateNominations(
+      playerToLynchId,
+      nominatedById,
+    );
     const updatedGame: LeanGameDocument = await this.gameRepository.getById(
       gameId,
     );
@@ -197,10 +204,6 @@ export default class PlayerService implements IPlayerService {
     return updatedGame;
   };
 
-  public disconnectFromGame = this.playerRepository.disconnectFromGame;
-
-  public reconnect = this.playerRepository.reconnect;
-
   private decideLynchedPlayer = async (
     nominatedPlayers: Player[],
     gameId: string,
@@ -211,7 +214,7 @@ export default class PlayerService implements IPlayerService {
       nominatedPlayers[1].nominatedBy.length
     ) {
       return this.gameRepository.update(gameId, {
-        $set: { 'stages.twoNominations': false, 'stages.tie': true },
+        stage: TIE,
       });
     }
     const lynchedPlayer: Player =
@@ -233,11 +236,7 @@ export default class PlayerService implements IPlayerService {
 
     return this.gameRepository.update(gameId, {
       lastPlayerKilled: lynchedPlayer,
-      $set: {
-        'stages.twoNominations': false,
-        'stages.tie': false,
-        'stages.playerLynched': true,
-      },
+      stage: PLAYER_LYNCHED,
     });
   };
 
@@ -253,7 +252,7 @@ export default class PlayerService implements IPlayerService {
     );
 
     const mafiaPlayers: Player[] = players.filter(
-      ({ role }: Player) => role === `mafia`,
+      ({ role }: Player) => role === MAFIA,
     );
 
     return { nominatedPlayers, alivePlayers, mafiaPlayers };

@@ -155,8 +155,16 @@ export const END_GUARDIAN_ANGEL_TURN = gql`
 `;
 
 export const NOMINATE_PLAYER = gql`
-  mutation nominatePlayer($playerToNominateId: String!, $nominatedById: String!, $gameId: String!) {
-    nominatePlayer(playerToNominateId: $playerToNominateId, nominatedById: $nominatedById, gameId: $gameId) {
+  mutation nominatePlayer(
+    $playerToNominateId: String!
+    $nominatedById: String!
+    $gameId: String!
+  ) {
+    nominatePlayer(
+      playerToNominateId: $playerToNominateId
+      nominatedById: $nominatedById
+      gameId: $gameId
+    ) {
       gameId
       stage
       players {
@@ -174,7 +182,37 @@ export const NOMINATE_PLAYER = gql`
       }
     }
   }
-`
+`;
+
+export const LYNCH_PLAYER = gql`
+  mutation lynchPlayer(
+    $playerToLynchId: String!
+    $nominatedById: String!
+    $gameId: String!
+  ) {
+    lynchPlayer(
+      playerToLynchId: $playerToLynchId
+      nominatedById: $nominatedById
+      gameId: $gameId
+    ) {
+      gameId
+      stage
+      players {
+        name
+        _id
+        isAlive
+        nominatedBy {
+          name
+          _id
+        }
+      }
+      nominatedPlayers {
+        name
+        _id
+      }
+    }
+  }
+`;
 
 export const GAME_SUBSCRIPTION = gql`
   subscription OnGameUpdated($gameId: String!) {

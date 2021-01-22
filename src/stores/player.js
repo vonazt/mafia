@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
 
-const playerStore = writable({});
+const playerStore = writable({ isNominating: false, playerToLynch: {} });
 
 export default playerStore;

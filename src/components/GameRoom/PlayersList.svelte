@@ -16,6 +16,7 @@
     GUARDIAN_ANGEL_AWAKE,
     DETECTIVE_AWAKE,
     DAY,
+    TWO_NOMINATIONS,
   } from '../../constants';
 
   const nominatePlayerForAssassination = mutation(
@@ -32,6 +33,8 @@
     [GUARDIAN_ANGEL_AWAKE]: (playerToProtect) =>
       guardianAngelStore.update((store) => ({ ...store, playerToProtect })),
     [DAY]: (playerToNominate) => handleNominatePlayer(playerToNominate),
+    [TWO_NOMINATIONS]: (playerToLynch) =>
+      playerStore.update((store) => ({ ...store, playerToLynch })),
   };
 
   const handleNominatePlayer = async (player) => {
@@ -60,7 +63,7 @@
 
   const canNominate = (
     player,
-    currentPlayerRole,
+    { role: currentPlayerRole, isNominating },
     detectiveIsInvestigating,
     guardianAngelProtecting,
   ) => {
@@ -73,12 +76,10 @@
         (currentPlayerRole === GUARDIAN_ANGEL &&
           $gameStore.stage === GUARDIAN_ANGEL_AWAKE &&
           !guardianAngelProtecting) ||
-        ($gameStore.stage === DAY && player.isAlive && $playerStore.isAlive))
-      // ||
-      // (!nominating &&
-      //   thisPlayer.isAlive &&
-      //   stages.twoNominations &&
-      //   nominatedPlayers.some(({ _id }) => _id === player._id))
+        ($gameStore.stage === DAY && player.isAlive && $playerStore.isAlive) ||
+        (!isNominating && $playerStore.isAlive &&
+          $gameStore.stage === TWO_NOMINATIONS &&
+          $gameStore.nominatedPlayers.some(({ _id }) => _id === player._id)))
     );
   };
 
@@ -96,14 +97,15 @@
   {/if}
   <ol>
     {#each $gameStore.players as player}
-      {#if canNominate(player, $playerStore.role, $detectiveStore.isInvestigating, $guardianAngelStore.isProtecting)}
+      {#if canNominate(player, $playerStore, $detectiveStore.isInvestigating, $guardianAngelStore.isProtecting)}
         <input
           type="radio"
           bind:group={playerToNominate}
           value={player}
           on:click={() => {
             handleNominate[$gameStore.stage](player);
-          }} />
+          }}
+        />
       {/if}
       <li class={`${!player.isAlive ? `line-through` : ``}`}>{player.name}</li>
       {#if player.nominatedBy.length && (($playerStore.role === MAFIA && $gameStore.stage === MAFIA_AWAKE) || $gameStore.stage === DAY)}

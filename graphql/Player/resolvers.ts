@@ -26,6 +26,7 @@ import {
   PLAYER_KILLED_ID,
   PLAYER_TO_NOMINATE_ID,
   NOMINATED_BY_ID,
+  PLAYER_TO_LYNCH_ID,
 } from '../../constants';
 
 @Service()
@@ -115,6 +116,22 @@ export default class PlayerResolver {
   ) {
     const updatedGame: LeanGameDocument = await this.playerService.nominate(
       playerToNominateId,
+      nominatedById,
+      gameId,
+    );
+    await pubsub.publish(UPDATED_GAME, updatedGame);
+    return updatedGame;
+  }
+
+  @Mutation(() => Game)
+  async lynchPlayer(
+    @Arg(PLAYER_TO_LYNCH_ID) playerToLynchId: string,
+    @Arg(NOMINATED_BY_ID) nominatedById: string,
+    @Arg(GAME_ID) gameId: string,
+    @PubSub() pubsub: PubSubEngine,
+  ) {
+    const updatedGame: LeanGameDocument = await this.playerService.lynch(
+      playerToLynchId,
       nominatedById,
       gameId,
     );

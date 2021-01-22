@@ -9,6 +9,7 @@
     INTRO,
     MAFIA,
     MAFIA_AWAKE,
+    TWO_NOMINATIONS,
   } from '../../constants';
   import {
     AddPlayer,
@@ -19,7 +20,8 @@
     ConfirmAssassination,
     RejoinPlayer,
     InvestigatePlayer,
-    ProtectPlayer
+    ProtectPlayer,
+    LynchPlayer,
   } from './';
   import playerStore from '../../stores/player';
   import gameStore from '../../stores/game';
@@ -52,8 +54,13 @@
   }
 
   $: if ($playerSubscription?.data?.updatedPlayer) {
-    playerStore.update((store) => ({...store, ...$playerSubscription.data.updatedPlayer}));
+    playerStore.update((store) => ({
+      ...store,
+      ...$playerSubscription.data.updatedPlayer,
+    }));
   }
+
+  $: console.log('PLAYER STORE IN GAME ROOM IS', $playerStore)
 </script>
 
 <div class="flex flex-wrap w-full h-full content-start pt-5">
@@ -69,7 +76,8 @@
     <RejoinPlayer
       {joined}
       player={getSavedPlayer()}
-      gameId={$gameStore.gameId} />
+      gameId={$gameStore.gameId}
+    />
   {/if}
   <StageDescription />
   {#if $gameStore.nominatedPlayers.length && $gameStore.stage === MAFIA_AWAKE && $playerStore.role === MAFIA}
@@ -80,5 +88,8 @@
   {/if}
   {#if $gameStore.stage === GUARDIAN_ANGEL_AWAKE && $playerStore.role === GUARDIAN_ANGEL}
     <ProtectPlayer />
+  {/if}
+  {#if $gameStore.stage === TWO_NOMINATIONS}
+    <LynchPlayer />
   {/if}
 </div>

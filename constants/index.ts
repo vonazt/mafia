@@ -15,6 +15,7 @@ export const MAFIA_HITMAN_ID = `mafiaHitmanId`
 export const PLAYER_KILLED_ID = `playerKilledId`
 export const PLAYER_TO_NOMINATE_ID = `playerToNominateId`
 export const NOMINATED_BY_ID = `nominatedById`
+export const PLAYER_TO_LYNCH_ID = `playerToLynchId`
 
 //stages
 export const INTRO = `intro`

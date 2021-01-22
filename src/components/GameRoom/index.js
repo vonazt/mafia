@@ -7,6 +7,7 @@ import ConfirmAssassination from './ConfirmAssassination.svelte';
 import RejoinPlayer from './RejoinPlayer.svelte';
 import InvestigatePlayer from './InvestigatePlayer.svelte';
 import ProtectPlayer from './ProtectPlayer.svelte';
+import LynchPlayer from './LynchPlayer.svelte';
 
 export {
   AddPlayer,
@@ -17,5 +18,6 @@ export {
   ConfirmAssassination,
   RejoinPlayer,
   InvestigatePlayer,
-  ProtectPlayer
+  ProtectPlayer,
+  LynchPlayer
 };
