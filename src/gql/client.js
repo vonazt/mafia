@@ -7,10 +7,10 @@ import {
 import { getMainDefinition } from '@apollo/client/utilities';
 import { WebSocketLink } from '@apollo/client/link/ws';
 
-const httpLink = createHttpLink({ uri: `http://localhost:5000/graphql` });
+const httpLink = createHttpLink({ uri: `http://localhost:3000/graphql` });
 
 const wsLink = new WebSocketLink({
-  uri: `ws://localhost:5000/subscriptions`,
+  uri: `ws://localhost:3000/subscriptions`,
   options: {
     reconnect: true,
   },
