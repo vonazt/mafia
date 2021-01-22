@@ -25,7 +25,7 @@ export const GUARDIAN_ANGEL_AWAKE = `guardianAngelAwake`
 export const DAY = `day`
 export const TWO_NOMINATIONS = `twoNominations`
 export const TIE = `tie`
-export const PLAYER_LYNCHED = `playerLynched`
+export const NIGHT = `night`
 
 //roles
 export const MAFIA = `mafia`

@@ -9,7 +9,8 @@ import { IGameRepository } from '../Repositories/GameRepository';
 import {
   DETECTIVE_AWAKE,
   MAFIA,
-  PLAYER_LYNCHED,
+  MAFIA_AWAKE,
+  NIGHT,
   ROLE,
   TIE,
   TWO_NOMINATIONS,
@@ -236,7 +237,7 @@ export default class PlayerService implements IPlayerService {
 
     return this.gameRepository.update(gameId, {
       lastPlayerKilled: lynchedPlayer,
-      stage: PLAYER_LYNCHED,
+      stage: MAFIA_AWAKE,
     });
   };
 

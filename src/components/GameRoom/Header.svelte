@@ -11,7 +11,7 @@
     [GUARDIAN_ANGEL]: `guardian angel`,
   };
 
-  export const getRole = (player) =>
+  const getRole = (player) =>
     player.isAlive
       ? `Your role: ${roleDictionary[player.role]}`
       : `You are DEAD. Remember: dead men (and women) tell no tales`;

@@ -35,6 +35,7 @@ export const JOIN_GAME = gql`
       lastPlayerKilled {
         name
         _id
+        role
       }
     }
   }
@@ -61,6 +62,7 @@ export const ADD_PLAYER = gql`
       lastPlayerKilled {
         name
         _id
+        role
       }
     }
   }
@@ -130,6 +132,7 @@ export const END_DETECTIVE_TURN = gql`
       lastPlayerKilled {
         _id
         name
+        role
       }
     }
   }
@@ -149,6 +152,7 @@ export const END_GUARDIAN_ANGEL_TURN = gql`
       lastPlayerKilled {
         _id
         name
+        role
       }
     }
   }
@@ -235,6 +239,7 @@ export const GAME_SUBSCRIPTION = gql`
       lastPlayerKilled {
         name
         _id
+        role
       }
     }
   }

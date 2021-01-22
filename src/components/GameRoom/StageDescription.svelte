@@ -7,6 +7,7 @@
     GUARDIAN_ANGEL_AWAKE,
     DAY,
     TWO_NOMINATIONS,
+    MAFIA
   } from '../../constants';
 
   const getDayDescription = (lastPlayerKilled) =>
@@ -16,8 +17,14 @@
 
   const stageDescriptions = {
     [INTRO]: () => ``,
-    [MAFIA_AWAKE]: () =>
-      `Night falls on the city. The mafia awake and select a citizen to "take care of..."`,
+    [MAFIA_AWAKE]: (game) =>
+      game.lastPlayerKilled
+        ? `${game.lastPlayerKilled.name} was strung up by the mob. They were ${
+            game.lastPlayerKilled.role === MAFIA
+              ? `a member of the mafia`
+              : `not a member of the mafia`
+          }. Night falls on the city. The mafia awake and select a citizen to "take care of..."`
+        : `Night falls on the city. The mafia awake and select a citizen to "take care of..."`,
     [DETECTIVE_AWAKE]: () =>
       `Blood has been spilled. The mafia retreat to their hideout, and the detective investigates...`,
     [GUARDIAN_ANGEL_AWAKE]: () =>
